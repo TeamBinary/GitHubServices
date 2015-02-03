@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Web.Http;
 using GitHubServices.Controllers;
 using GitHubServices.Models;
@@ -42,12 +43,9 @@ namespace GitHubServices.Test.Controllers
       // Arrange
       var expectedToc = new Toc
       {
-        ToCValueForPasting = @"# Table of Content
-* Right Here"
+        ToCValueForPasting = "# Table of Content" + Environment.NewLine + "* Right Here"
       };
-      const string content = @"There is a single header
-# Right Here
-But nothing more";
+      var content = "There is a single header" + Environment.NewLine + "# Right Here" + Environment.NewLine + "But nothing more";
 
       // Act
       var response = controller.CreateToc(content);
@@ -65,16 +63,9 @@ But nothing more";
       // Arrange
       var expectedToc = new Toc
       {
-        ToCValueForPasting = @"# Table of Content
-* One
-* Two
-* Three"
+        ToCValueForPasting = "# Table of Content" + Environment.NewLine + "* One" + Environment.NewLine + "* Two" + Environment.NewLine + "* Three"
       };
-      const string content = @"There contains multiple headers
-# One
-But nothing more
-# Two
-# Three";
+      var content = "There contains multiple headers" + Environment.NewLine + "# One" + Environment.NewLine + "But nothing more" + Environment.NewLine + "# Two" + Environment.NewLine + "# Three";
 
       // Act
       var response = controller.CreateToc(content);
