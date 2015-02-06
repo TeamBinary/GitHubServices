@@ -14,13 +14,22 @@ namespace GitHubServices.Controllers
             Console.WriteLine("Content_Console: {0}", content);
             Debug.WriteLine("Content_Debug: {0}", content);
 
+            var tocString = Logic(content);
+
+            return Request.CreateResponse(new Toc { ToCValueForPasting = tocString });
+        }
+
+        string Logic(string url)
+        {
+            if (!url.ToLower().EndsWith(".md")) 
+                return "";
+            
             var urlreader = new UrlReader();
-            var page = urlreader.ReadUrl(new Uri(content));
+            var page = urlreader.ReadUrl(new Uri(url));
 
             TocParser parser = new TocParser();
             var tocString = parser.MakeToc(page);
-
-            return Request.CreateResponse(new Toc { ToCValueForPasting = tocString });
+            return tocString;
         }
     }
 }
