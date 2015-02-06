@@ -7,23 +7,20 @@ using GitHubServices.Models;
 
 namespace GitHubServices.Controllers
 {
-  public class TocController : ApiController
-  {
-    public HttpResponseMessage CreateToc(string content)
+    public class TocController : ApiController
     {
-      Console.WriteLine("Content_Console: {0}", content);
-      Debug.WriteLine("Content_Debug: {0}", content);
+        public HttpResponseMessage CreateToc(string content)
+        {
+            Console.WriteLine("Content_Console: {0}", content);
+            Debug.WriteLine("Content_Debug: {0}", content);
 
-      var fakeTocLines = content
-        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-        .Where(x => x.StartsWith("#"))
-        .Select(x => x.Replace("#", ""))
-        .ToList();
+            var urlreader = new UrlReader();
+            var page = urlreader.ReadUrl(new Uri(content));
 
-      var tocString = "# Table of Content";
-      if (fakeTocLines.Any())
-        tocString += Environment.NewLine + "*" + String.Join(Environment.NewLine + "*", fakeTocLines);
-      return Request.CreateResponse(new Toc { ToCValueForPasting = tocString });
+            TocParser parser = new TocParser();
+            var tocString = parser.MakeToc(page);
+
+            return Request.CreateResponse(new Toc { ToCValueForPasting = tocString });
+        }
     }
-  }
 }
