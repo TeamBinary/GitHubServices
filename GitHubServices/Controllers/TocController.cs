@@ -9,6 +9,8 @@ namespace GitHubServices.Controllers
 {
     public class TocController : ApiController
     {
+        public UrlReader reader = null;
+
         public HttpResponseMessage CreateToc(string content)
         {
             Console.WriteLine("Content_Console: {0}", content);
@@ -23,11 +25,11 @@ namespace GitHubServices.Controllers
         {
             if (!url.ToLower().EndsWith(".md")) 
                 return "";
-            
-            var urlreader = new UrlReader();
-            var page = urlreader.ReadUrl(new Uri(url));
 
-            TocParser parser = new TocParser();
+            reader = reader ?? new UrlReader();
+            var page = reader.ReadUrl(new Uri(url));
+
+            var parser = new TocParser();
             var tocString = parser.MakeToc(page);
             return tocString;
         }
