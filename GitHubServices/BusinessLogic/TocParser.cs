@@ -9,11 +9,10 @@ namespace GitHubServices.Models
     {
         public string MakeToc(string content)
         {
+            var lines = content.Split(new[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+            var tocLines = lines.Where(x => x.StartsWith("#")).ToList();
             var fakeTocLines =
-                content.Split(
-                    new[] { Environment.NewLine },
-                    StringSplitOptions.RemoveEmptyEntries)
-                    .Where(x => x.StartsWith("#"))
+                tocLines
                     .Select(x => x.Replace("#", ""))
                     .ToList();
 

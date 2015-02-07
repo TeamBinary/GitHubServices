@@ -127,8 +127,8 @@
     </Compile>
     <Compile Include="Models\Toc.cs" />
     <Compile Include="Models\TocElements\TocElements.cs" />
-    <Compile Include="Models\TocParser.cs" />
-    <Compile Include="Models\UrlReader.cs" />
+    <Compile Include="BusinessLogic\TocParser.cs" />
+    <Compile Include="BusinessLogic\UrlReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

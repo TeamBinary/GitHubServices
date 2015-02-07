@@ -66,8 +66,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusinessLogic\TocParserTest.cs" />
     <Compile Include="Controllers\TocControllerTests.cs" />
-    <Compile Include="Model\UrlReader.cs" />
+    <Compile Include="BusinessLogic\UrlReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

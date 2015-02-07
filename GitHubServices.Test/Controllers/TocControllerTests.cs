@@ -36,7 +36,7 @@ namespace GitHubServices.Test.Controllers
       controller.reader = reader.Object;
 
       // Act
-      var response = controller.CreateToc(anyUrl);
+      var response = controller.Get(anyUrl);
 
       // Assert
       var printer = GetTestPrinter();
@@ -59,7 +59,7 @@ namespace GitHubServices.Test.Controllers
       controller.reader = reader.Object;
 
       // Act
-      var response = controller.CreateToc(anyUrl);
+      var response = controller.Get(anyUrl);
 
       // Assert
       var printer = GetTestPrinter();
@@ -82,7 +82,7 @@ namespace GitHubServices.Test.Controllers
       controller.reader = reader.Object;
 
       // Act
-      var response = controller.CreateToc(anyUrl);
+      var response = controller.Get(anyUrl);
 
       // Assert
       var printer = GetTestPrinter();
@@ -91,12 +91,16 @@ namespace GitHubServices.Test.Controllers
       Assert.AreEqual(printer.PrintObject(expectedToc), printer.PrintObject(actualToc));
     }
 
-    private static Stateprinter GetTestPrinter()
-    {
-      var cfg = ConfigurationHelper.GetStandardConfiguration();
-      var printer = new Stateprinter(cfg);
+      public static Stateprinter GetTestPrinter()
+      {
+          var cfg =
+              ConfigurationHelper
+                .GetStandardConfiguration()
+                .SetAreEqualsMethod(Assert.AreEqual);
 
-      return printer;
-    }
+          var printer = new Stateprinter(cfg);
+
+          return printer;
+      }
   }
 }
