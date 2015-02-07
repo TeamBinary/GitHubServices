@@ -44,8 +44,9 @@
     <Reference Include="PowerAssert">
       <HintPath>..\packages\PowerAssert.1.0.13.0\lib\net40\PowerAssert.dll</HintPath>
     </Reference>
-    <Reference Include="StatePrinter">
-      <HintPath>..\packages\StatePrinter.1.0.6\lib\net35\StatePrinter.dll</HintPath>
+    <Reference Include="StatePrinter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=693eec472ad792e3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\StatePrinter.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
