@@ -41,6 +41,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="Octokit">
+      <HintPath>..\packages\Octokit.0.6.2\lib\net45\Octokit.dll</HintPath>
+    </Reference>
     <Reference Include="PowerAssert">
       <HintPath>..\packages\PowerAssert.1.0.13.0\lib\net40\PowerAssert.dll</HintPath>
     </Reference>
@@ -69,6 +72,7 @@
     <Compile Include="BusinessLogic\TocParserTest.cs" />
     <Compile Include="Controllers\TocControllerTests.cs" />
     <Compile Include="BusinessLogic\UrlReader.cs" />
+    <Compile Include="GithubCalling\CallGithubby.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
