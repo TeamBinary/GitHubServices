@@ -26,5 +26,5 @@
 
   build:
     project: GitHubServices.sln
-  #  verbosity: minimal
-    verbosity: detailed
+    verbosity: minimal
+  #  verbosity: detailed
