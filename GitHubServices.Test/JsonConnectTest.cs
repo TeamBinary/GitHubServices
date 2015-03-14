@@ -22,7 +22,7 @@ namespace GitHubServices.Test
         public void Update()
         {
             var path = "/repos/kbilsted/AutoHasher/contents/README.md";
-            new GithubCommunicator(new GitHhubBase64(), new ExceptionHelper()).Update();
+         // TODO   new GithubCommunicator(new GitHhubBase64(), new ExceptionHelper()).Update();
         }
 
     }

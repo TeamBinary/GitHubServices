@@ -48,124 +48,6 @@ Table of content
 *  [4. License](#4-license)
 
 
-# 1. Introduction
-
-The StatePrinter is a free, highly configurable, thread safe utility that can turn any object-graph to a string representation. 
-
-Why you should take StatePrinter for a spin
-
-* *No more manual .ToString()* - it is much easier to write robus and self-sufficient `ToString()` methods. 
-* It becomes much easier to write unit tests. No more screens full of asserts. Especially testing against object-graphs is a bliss. 
-* It is part of the back-end engine of the very nice ApprovalTests framework (http://approvaltests.sourceforge.net/).
-* Very very configurable both in terms of what to harvest, and in terms of how to output.
-
-Version History: http://github.com/kbilsted/StatePrinter/blob/master/CHANGELOG.md
-
-
-### 1.1 Simple example usage
-
-To dump an object graph all you need to do is first to create an object graph
-
-```C#
-var car = new Car(new SteeringWheel(new FoamGrip(""Plastic"")));
-car.Brand = ""Toyota"";
-```
-
-then print it
-
-```C#
-Stateprinter printer = new Stateprinter();
-Console.WriteLine(printer.PrintObject(car));
-```
-
-and you get the following output
-	
-	new Car()
-	{
-	    StereoAmplifiers = null
-	    steeringWheel = new SteeringWheel()
-	    {
-	        Size = 3
-	        Grip = new FoamGrip()
-	        {
-	            Material = """"Plastic""""
-	        }
-	        Weight = 525
-	    }
-	    Brand = """"Toyota""""
-	}
-
-
-Naturally, circular references are supported
-
-```C#
-var course = new Course();
-course.Members.Add(new Student(""Stan"", course));
-course.Members.Add(new Student(""Richy"", course));
-
-Console.WriteLine(printer.PrintObject(course));
-```
-
-yields	 
-	     
-	new Course(), ref: 0
-	{
-	    Members = new List<Student>()
-	    Members[0] = new Student()
-	    {
-	        name = """"Stan""""
-	        course =  -> 0
-	    }
-	    Members[1] = new Student()
-	    {
-	        name = """"Richy""""
-	        course =  -> 0
-	    }
-	}
-
-notice the `-> 0` this is a pointer back to an already printed object. Notice that references are only added to the output if needed. This amongst alot of other details are configurable.
-
-
-### 1.2 Generic ToString() usage
-
-If you are anything like me, there is nothing worse than having to edit all sorts of bizare methods on a class whenever you add a field to a class. For that reason I always find myself reluctant to maintaining the `ToString()` method. With the stateprinter this situation has changed, since I can use the same standard implementation for all my classes. I can even add it as part of my code-template in my editor.
-
-
-```C#
-class AClassWithToString
-{
-  string B = ""hello"";
-  int[] C = {5,4,3,2,1};
-
-  // Nice stuff ahead!
-  static readonly Stateprinter printer = new Stateprinter();
-  public override string ToString()
-  {
-    return printer.PrintObject(this);
-  }
-}
-```
-
-And with the code
-
-```C#
-Console.WriteLine( new AClassWithToString() );
-```
-
-we get
-
-	new AClassWithToString()
-	{
-	    B = """"hello""""
-	    C = new Int32[]()
-	    C[0] = 5
-	    C[1] = 4
-	    C[2] = 3
-	    C[3] = 2
-	    C[4] = 1
-	}
-
-
 
 # 2. Configuration
 
@@ -353,26 +235,6 @@ the `IOutputFormatter` only contains a single method
 string Print(List<Token> tokens);
 ```
 
-It turns tokens into a ""format"". Much like traditional compiler design, a token represents a processed entity. In the StatePrinter they look like
-
-```C#
-public class Token : IEquatable<Token>
-{
-  public readonly TokenType Tokenkind;
-  public readonly Type FieldType;
-  public readonly string FieldName;
-  public readonly string Value;
-  public readonly Reference ReferenceNo;
-}
-```
-
-So at this point in the process we need not worry about recursion, field traversal or the like. We focus on the formatting, turning the tokens into a XML-like, JSON-like, LISP-like S-Expressions or whatever you wish. In the current implementation we make two passes on the input to track which objects are referred to by later object. Those we wish to augment with a reference.
-
-The following three outputters are implemented:
-
-
-
-
 ### Curly style
 
 The curly style is reminiscent for C# code
@@ -498,39 +360,6 @@ given
     }
 ```
 
-You can *in a type safe manner, and using auto-completion of visual studio* include or exclude fields. Notice that the type is provided in the call (`A`) therefore the editor can help suggest which properties or fields to include or exclude. Unlike the normal field-harvester, the `ProjectiveHarvester` uses the FieldsAndProperties fieldharvester so it will by default include more than what you might be used to from using the normal field processor.
-
-```C#
-      var cfg = ConfigurationHelper.GetStandardConfiguration("" "");
-      cfg.Projectionharvester().Exclude<A>(x => x.X, x => x.Y);
-      var printer = new Stateprinter(cfg);
-
-      var state = printer.PrintObject(new A { X = DateTime.Now, Name = ""Charly"" });
-      Assert.AreEqual(@""new A(){ Name = """"Charly""""}"", state.Replace(""\r\n"", """"));
-```
-
-and
-
-```C#
-      var cfg = ConfigurationHelper.GetStandardConfiguration("" "");
-      cfg.Projectionharvester().Include<A>(x => x.Name);
-      var printer = new Stateprinter(cfg);
-
-      var state = printer.PrintObject(new A { X = DateTime.Now, Name = ""Charly"" });
-      Assert.AreEqual(@""new A(){ Name = """"Charly""""}"", state.Replace(""\r\n"", """"));
-```
-
-or programmatically
-
-```C#
- var cfg = ConfigurationHelper.GetStandardConfiguration("" "");
-      cfg.Projectionharvester()
-        .AddFilter<A>(x => x.Where(y => y.SanitizedName != ""X"" && y.SanitizedName != ""Y""));
-```
-
-You can now easily configure what to dump when testing. 
-
-
 
 # 4. License
 
@@ -550,24 +379,21 @@ Kasper B. Graversen";
             var actual = sut.MakeToc(content);
 
             var expected = @"# Table of Content
-* StatePrinter 
-* 1. Introduction
-* 1.1 Simple example usage
-* 1.2 Generic ToString() usage
-* 2. Configuration
-* 2.1 Stacked configuration principle
-* 2.2 Simple changes
-* 2.3 Culture specific printing
-* 2.4 Output as a single line
-* 2.5 Field harvesting
-* 2.6 Simple value printing
-* 2.7 Output formatting
-* Curly style
-* JSon style
-* XML style
-* 3. Unit testing
-* 3.1 Restricting fields harvested
-* 4. License";
+* [StatePrinter](#stateprinter)
+* [2. Configuration](#2-configuration)
+ * [2.1 Stacked configuration principle](#21-stacked-configuration-principle)
+ * [2.2 Simple changes](#22-simple-changes)
+ * [2.3 Culture specific printing](#23-culture-specific-printing)
+ * [2.4 Output as a single line](#24-output-as-a-single-line)
+ * [2.5 Field harvesting](#25-field-harvesting)
+ * [2.6 Simple value printing](#26-simple-value-printing)
+ * [2.7 Output formatting](#27-output-formatting)
+  * [Curly style](#curly-style)
+  * [JSon style](#json-style)
+  * [XML style](#xml-style)
+* [3. Unit testing](#3-unit-testing)
+ * [3.1 Restricting fields harvested](#31-restricting-fields-harvested)
+* [4. License](#4-license)";
 
             TocControllerTests.GetTestPrinter().Assert.IsSame(expected, actual);
         }
