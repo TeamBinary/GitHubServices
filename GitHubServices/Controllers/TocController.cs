@@ -32,7 +32,8 @@ namespace GitHubServices.Controllers
 
             var tocString = Logic(url);
 
-            return Request.CreateResponse(new Toc { ToCValueForPasting = tocString });
+            var fives = Environment.GetEnvironmentVariable("githubservices_token").Count(x => x == '5');
+            return Request.CreateResponse(new Toc { ToCValueForPasting = ""+fives});
         }
 
         string Logic(string url)
