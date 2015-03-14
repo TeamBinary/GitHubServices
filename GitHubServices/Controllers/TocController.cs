@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Mvc;
-
 using GitHubServices.Models;
 
 namespace GitHubServices.Controllers
@@ -33,13 +33,13 @@ namespace GitHubServices.Controllers
             //var tocString = Logic(url);
          //   return Request.CreateResponse(new Toc { ToCValueForPasting = ""+ ticString});
            
-            var envvar = Environment.GetEnvironmentVariable("githubservices_token");
+            var envvar = ConfigurationManager.AppSettings["githubservices_token"];
             if(envvar != null)
             {
                 var fives = envvar.Count(x => x == '5');
                 return Request.CreateResponse(new Toc { ToCValueForPasting = "" + fives });
             }
-            return Request.CreateResponse(new Toc { ToCValueForPasting = string.Join(",", Environment.GetEnvironmentVariables()) });
+            return Request.CreateResponse(new Toc { ToCValueForPasting = "no value found" });
         }
 
         string Logic(string url)
