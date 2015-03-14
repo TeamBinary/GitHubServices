@@ -13,9 +13,9 @@ namespace GitHubServices.Test
         public void getContent()
         {
             var path = "/repos/kbilsted/AutoHasher/contents/README.md";
-            var res = new GithubCommunicator(new GitHhubBase64(), new ExceptionHelper()).GetContent(path);
+//            var res = new GithubCommunicator(new GitHhubBase64(), new ExceptionHelper()).GetContent(path);
 
-            Console.WriteLine(res);
+         //   Console.WriteLine(res);
         }
 
         [Test]

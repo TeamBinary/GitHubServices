@@ -38,7 +38,7 @@ namespace GitHubServices.Models
 
         private string Markdowned(TocEntry entry)
         {
-            var space = entry.Level.Replace("#", " ").Substring(1);
+            var space = entry.Level.Replace("#", "  ").Substring(1);
             var link = "#" + entry.Title
                 .Replace(" ", "-")
                 .Replace(".", "")
