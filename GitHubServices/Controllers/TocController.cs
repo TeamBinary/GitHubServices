@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Mvc;
 using GitHubServices.Models;
+using Octokit;
 
 namespace GitHubServices.Controllers
 {
@@ -20,6 +23,49 @@ namespace GitHubServices.Controllers
         }
     }
 
+    static class Configuration22
+    {
+        static Lazy<string> val = new Lazy<string>(() =>
+            {
+                var path = @"c:\temp\githubservice_token.txt";
+                if (File.Exists(path))
+                    return File.ReadAllText(path);
+
+                return ConfigurationManager.AppSettings["githubservices_token"];
+            });
+
+        public static string GitHubAccessToken
+        {
+            get { return val.Value; }
+
+        }
+    }
+
+
+    public class BooController : ApiController
+    {
+        public HttpResponseMessage Get(string url)
+        {
+            return Request.CreateResponse(new Toc { ToCValueForPasting = makeTestingStringForTempWork() });
+        }
+
+        string makeTestingStringForTempWork()
+        {
+            var client = new GitHubClient(new ProductHeaderValue("my-cool-app-name"));
+
+            var accessToken = Configuration22.GitHubAccessToken;
+            var tokenAuth = new Credentials(accessToken);
+            client.Credentials = tokenAuth;
+
+            Console.WriteLine("***Issues***");
+            var issues = client.Issue.GetForRepository("kbilsted", "stateprinter").Result;
+            var res = string.Join(", ", issues.Select(x => x.Title + "::" + x.State));
+            Console.WriteLine(res);
+            return res;
+        }
+
+    }
+
     public class TocController : ApiController
     {
         public UrlReader reader = null;
@@ -30,16 +76,8 @@ namespace GitHubServices.Controllers
             Console.WriteLine(string.Format("Content_Console: {0}", url));
             Debug.WriteLine(string.Format("Content_Debug: {0}", url));
 
-            //var tocString = Logic(url);
-         //   return Request.CreateResponse(new Toc { ToCValueForPasting = ""+ ticString});
-           
-            var envvar = ConfigurationManager.AppSettings["githubservices_token"];
-            if(envvar != null)
-            {
-                var fives = envvar.Count(x => x == '5');
-                return Request.CreateResponse(new Toc { ToCValueForPasting = "" + fives });
-            }
-            return Request.CreateResponse(new Toc { ToCValueForPasting = "no value found" });
+            var tocString = Logic(url);
+            return Request.CreateResponse(new Toc { ToCValueForPasting = "" + tocString });
         }
 
         string Logic(string url)

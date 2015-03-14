@@ -397,7 +397,7 @@ Kasper B. Graversen";
 
 
 
-            TocControllerTests.GetTestPrinter().Assert.IsSame(expected, actual);
+            Create.Printer().Assert.IsSame(expected, actual);
         }
 
 

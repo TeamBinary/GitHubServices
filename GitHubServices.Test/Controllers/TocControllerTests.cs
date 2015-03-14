@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Globalization;
 using System.Net.Http;
 using System.Web.Http;
 using GitHubServices.Controllers;
 using GitHubServices.Models;
-
 using Moq;
-
 using NUnit.Framework;
 using PowerAssert;
 using StatePrinter;
@@ -39,7 +38,7 @@ namespace GitHubServices.Test.Controllers
       var response = controller.Get(anyUrl);
 
       // Assert
-      var printer = GetTestPrinter();
+      var printer = Create.Printer();
       Toc actualToc = null;
       PAssert.IsTrue(() => response.TryGetContentValue(out actualToc));
      // Assert.AreEqual(printer.PrintObject(expectedToc), printer.PrintObject(actualToc));
@@ -62,10 +61,16 @@ namespace GitHubServices.Test.Controllers
       var response = controller.Get(anyUrl);
 
       // Assert
-      var printer = GetTestPrinter();
+      var printer = Create.Printer();
       Toc actualToc = null;
       PAssert.IsTrue(() => response.TryGetContentValue(out actualToc));
-  //    Assert.AreEqual(printer.PrintObject(expectedToc), printer.PrintObject(actualToc));
+      var expected = @"new Toc()
+{
+    ToCValueForPasting = ""# Table of Content
+ * [Right Here](#right-here)""
+}";
+
+      printer.Assert.PrintIsSame(expected, actualToc);
     }
 
     [Test]
@@ -85,23 +90,11 @@ namespace GitHubServices.Test.Controllers
       var response = controller.Get(anyUrl);
 
       // Assert
-      var printer = GetTestPrinter();
+      var printer = Create.Printer();
       Toc actualToc = null;
       PAssert.IsTrue(() => response.TryGetContentValue(out actualToc));
       //Assert.AreEqual(printer.PrintObject(expectedToc), printer.PrintObject(actualToc));
     }
 
-      public static Stateprinter GetTestPrinter()
-      {
-          var cfg =
-              ConfigurationHelper
-                .GetStandardConfiguration()
-                .SetAreEqualsMethod(Assert.AreEqual)
-              //.SetCulture(CultureInfo.CreateSpecificCulture("da-DK"));
-                ;
-          var printer = new Stateprinter(cfg);
-
-          return printer;
-      }
   }
 }

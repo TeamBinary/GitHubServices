@@ -44,6 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Octokit">
+      <HintPath>..\packages\Octokit.0.7.3\lib\net45\Octokit.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -123,7 +126,6 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="BusinessLogic\ExceptionHelper.cs" />
     <Compile Include="BusinessLogic\GitHhubBase64.cs" />
-    <Compile Include="BusinessLogic\GithubCommunicator.cs" />
     <Compile Include="BusinessLogic\Json\DataJsons.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\TocController.cs" />
