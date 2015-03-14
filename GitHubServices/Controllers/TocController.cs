@@ -30,10 +30,16 @@ namespace GitHubServices.Controllers
             Console.WriteLine(string.Format("Content_Console: {0}", url));
             Debug.WriteLine(string.Format("Content_Debug: {0}", url));
 
-            var tocString = Logic(url);
-
-            var fives = Environment.GetEnvironmentVariable("githubservices_token").Count(x => x == '5');
-            return Request.CreateResponse(new Toc { ToCValueForPasting = ""+fives});
+            //var tocString = Logic(url);
+         //   return Request.CreateResponse(new Toc { ToCValueForPasting = ""+ ticString});
+           
+            var envvar = Environment.GetEnvironmentVariable("githubservices_token");
+            if(envvar != null)
+            {
+                var fives = envvar.Count(x => x == '5');
+                return Request.CreateResponse(new Toc { ToCValueForPasting = "" + fives });
+            }
+            return Request.CreateResponse(new Toc { ToCValueForPasting = string.Join(",", Environment.GetEnvironmentVariables()) });
         }
 
         string Logic(string url)
