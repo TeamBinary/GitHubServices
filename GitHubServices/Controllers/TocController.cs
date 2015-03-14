@@ -54,6 +54,9 @@ namespace GitHubServices.Controllers
             var client = new GitHubClient(new ProductHeaderValue("my-cool-app-name"));
 
             var accessToken = Configuration22.GitHubAccessToken;
+            if(accessToken == null)
+                accessToken = ConfigurationManager.AppSettings["githubservices_token"];
+
             var tokenAuth = new Credentials(accessToken);
             client.Credentials = tokenAuth;
 
