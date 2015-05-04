@@ -48,13 +48,7 @@ namespace GitHubServices.Test.Controllers
     ToCValueForPasting = ""Support custom ordering of collections::Open, projection should enable adding computed field::Open, integration with coverty::Open, Add tabular as an output form::Open, Stateprinter.printobject should not use optional paramters::Open""
 }";
 
-
-
       printer.Assert.PrintIsSame(expected, actualToc);
     }
-
-  
-
-    
   }
 }

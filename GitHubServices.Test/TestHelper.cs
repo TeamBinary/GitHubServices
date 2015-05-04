@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using System.Globalization;
+
 using StatePrinter;
 using StatePrinter.Configurations;
+using StatePrinter.TestAssistance;
 
 namespace GitHubServices.Test
 {
@@ -17,11 +13,16 @@ namespace GitHubServices.Test
             var cfg =
                 ConfigurationHelper
                   .GetStandardConfiguration()
-                  .SetAreEqualsMethod(Assert.AreEqual)
+                  .SetAreEqualsMethod(NUnit.Framework.Assert.AreEqual)
                   .SetCulture(CultureInfo.CreateSpecificCulture("da-DK"));
             var printer = new Stateprinter(cfg);
 
             return printer;
+        }
+
+        public static Asserter Assert()
+        {
+            return Printer().Assert;
         }
     }
 }

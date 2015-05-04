@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Net.Http;
 using System.Web.Http;
 using GitHubServices.Controllers;
@@ -7,8 +6,6 @@ using GitHubServices.Models;
 using Moq;
 using NUnit.Framework;
 using PowerAssert;
-using StatePrinter;
-using StatePrinter.Configurations;
 
 namespace GitHubServices.Test.Controllers
 {
@@ -45,14 +42,12 @@ namespace GitHubServices.Test.Controllers
     }
 
     [Test]
-    public void ContentContainsSingleHeader()
+    public void ContentContainsSingleHeader_no_toc_marker()
     {
       // Arrange
-      var expectedToc = new Toc
-      {
-        ToCValueForPasting = "# Table of Content" + Environment.NewLine + "* Right Here"
-      };
-      var content = "There is a single header" + Environment.NewLine + "# Right Here" + Environment.NewLine + "But nothing more";
+      var content = "There is a single header" + Environment.NewLine 
+          + "# Right Here" + Environment.NewLine 
+          + "But nothing more";
       var reader = new Mock<UrlReader>(MockBehavior.Strict);
       reader.Setup(x => x.ReadUrl(It.IsAny<Uri>())).Returns(content);
       controller.reader = reader.Object;
@@ -66,11 +61,38 @@ namespace GitHubServices.Test.Controllers
       PAssert.IsTrue(() => response.TryGetContentValue(out actualToc));
       var expected = @"new Toc()
 {
-    ToCValueForPasting = ""# Table of Content
- * [Right Here](#right-here)""
+    ToCValueForPasting = ""Table of Content""
 }";
-
       printer.Assert.PrintIsSame(expected, actualToc);
+    }
+
+
+    [Test]
+    public void ContentContainsSingleHeader()
+    {
+        // Arrange
+        var content = "There is a single header" + Environment.NewLine 
+            + "Table of content" + Environment.NewLine 
+            + "# Right Here" + Environment.NewLine 
+            + "But nothing more";
+        var reader = new Mock<UrlReader>(MockBehavior.Strict);
+        reader.Setup(x => x.ReadUrl(It.IsAny<Uri>())).Returns(content);
+        controller.reader = reader.Object;
+
+        // Act
+        var response = controller.Get(anyUrl);
+
+        // Assert
+        var printer = Create.Printer();
+        Toc actualToc = null;
+        PAssert.IsTrue(() => response.TryGetContentValue(out actualToc));
+        var expected = @"new Toc()
+{
+    ToCValueForPasting = ""Table of Content
+ * [Right Here](#right-here)
+""
+}";
+        printer.Assert.PrintIsSame(expected, actualToc);
     }
 
     [Test]

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using GitHubServices.Models;
-using GitHubServices.Test.Controllers;
 
 using NUnit.Framework;
 
@@ -378,8 +375,7 @@ Kasper B. Graversen";
             var sut = new TocParser();
             var actual = sut.MakeToc(content);
 
-            var expected = @"# Table of Content
- * [StatePrinter](#stateprinter)
+            var expected = @"Table of Content
  * [2. Configuration](#2-configuration)
    * [2.1 Stacked configuration principle](#21-stacked-configuration-principle)
    * [2.2 Simple changes](#22-simple-changes)
@@ -393,22 +389,21 @@ Kasper B. Graversen";
      * [XML style](#xml-style)
  * [3. Unit testing](#3-unit-testing)
    * [3.1 Restricting fields harvested](#31-restricting-fields-harvested)
- * [4. License](#4-license)";
-
-
+ * [4. License](#4-license)
+";
 
             Create.Printer().Assert.IsSame(expected, actual);
         }
 
 
+        [Explicit]
         [Test]
-        public void Helper()
+        public void Helper_online_master_AutomatingUnitTesting()
         {
             System.Net.WebClient wc = new System.Net.WebClient();
             string webData = wc.DownloadString("https://raw.githubusercontent.com/kbilsted/StatePrinter/master/doc/AutomatingUnitTesting.md");
 
             Console.WriteLine(new TocParser().MakeToc(webData));
         }
-
     }
 }

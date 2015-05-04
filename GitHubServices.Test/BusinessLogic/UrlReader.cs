@@ -10,6 +10,7 @@ namespace GitHubServices.Test.Model
     [Category("UnitTest")]
     class UrlReaderTest
     {
+        [Explicit]
         [Test]
         public void TestGetContent()
         {

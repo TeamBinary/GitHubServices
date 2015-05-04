@@ -1,42 +1,81 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Text.RegularExpressions;
 
 namespace GitHubServices.Models
 {
-
-    class TocEntry
+    public class TocEntry
     {
         public string Title, Level;
-
     }
+
+    public class ContentReplacer
+    {
+        static string title = @"(T|t)able (O|o)f (C|c)ontent\s*(\r?\n)+";
+        static string tocline = @"(\s*\*[^\n]*\n)*";
+
+        static readonly Regex TocRex = new Regex(title + tocline, RegexOptions.Singleline | RegexOptions.Compiled);
+
+        public string TryReplaceToc(string content, string newToc)
+        {
+            var match = TocRex.Match(content);
+            if (!match.Success)
+                return null;
+
+            return content.Substring(0, match.Index)
+                + newToc
+                + content.Substring(match.Index + match.Length);
+        }
+    }
+
     public class TocParser
     {
-        static Regex tocRex= new Regex("(?<level>#+)( |\t)+(?<title>.*)", RegexOptions.Multiline | RegexOptions.Compiled);
+        static readonly Regex TocRex = new Regex("(?<level>#+)( |\t)+(?<title>.*)", RegexOptions.Multiline | RegexOptions.Compiled);
 
         public string MakeToc(string content)
         {
-            var lines = content.Split(new[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-            var tocLines = lines.Where(x => x.StartsWith("#")).ToList();
-            var parsedToc = tocLines
-                .Select(x => tocRex.Match(x))
-                .Select(x => new TocEntry() { Title = x.Groups["title"].Value.Trim(), Level = x.Groups["level"].Value });
-            
-            var tocString = "# Table of Content";
-            if (parsedToc.Any())
-            {
-                var markdownedTocLines = parsedToc.Select(x => Markdowned(x));
-                tocString += Environment.NewLine 
-                   
-                    + String.Join(Environment.NewLine, markdownedTocLines);
-            }
+            var parsedToc = Parse(content);
+
+            var tocString = MarkDown(parsedToc);
+            return tocString;
+        }
+
+        string MarkDown(List<TocEntry> parsedToc)
+        {
+            var tocString = "Table of Content";
+            if (!parsedToc.Any())
+                return tocString;
+
+            var markdownedTocLines = parsedToc.Select(x => Markdowned(x));
+            tocString += Environment.NewLine + string.Join(Environment.NewLine, markdownedTocLines) + Environment.NewLine;
 
             return tocString;
         }
 
-        private string Markdowned(TocEntry entry)
+
+        List<TocEntry> Parse(string content)
+        {
+            var lines = content.Split(new[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+
+            var tocLines = 
+                lines.SkipWhile(x => !x.ToLower().Contains("table of content"))
+                .Skip(1)
+                .Select(x => x.Trim())
+                .Where(x => x.StartsWith("#"))
+                .ToArray();
+
+            var parsedToc =
+                tocLines.Select(x => TocRex.Match(x))
+                    .Select(x => new TocEntry()
+                    {
+                        Title = x.Groups["title"].Value,
+                        Level = x.Groups["level"].Value
+                    });
+            return parsedToc.ToList();
+        }
+
+        string Markdowned(TocEntry entry)
         {
             var space = entry.Level.Replace("#", "  ").Substring(1);
             var link = "#" + entry.Title
