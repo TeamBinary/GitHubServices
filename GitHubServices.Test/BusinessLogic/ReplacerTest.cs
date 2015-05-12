@@ -1,4 +1,6 @@
-﻿using GitHubServices.Models;
+﻿using System;
+
+using GitHubServices.Models;
 
 using NUnit.Framework;
 
@@ -63,12 +65,12 @@ var cfg = Confi";
 
             var toc = parser.MakeToc(content);
 
-            var expected = @"""Table of Content
+            var expected = @"Table of Content
  * [1. Introduction](#1-introduction)
  * [2. Configuration](#2-configuration)
    * [2.1 Stacked configuration principle](#21-stacked-configuration-principle)
-   * [2.2 Simple changes](#22-simple-changes)""";
-            Create.Assert().PrintIsSame(expected, toc);
+   * [2.2 Simple changes](#22-simple-changes)";
+            Create.Assert2().PrintIsSame(expected, toc);
 
 
             var newVersion = @"""

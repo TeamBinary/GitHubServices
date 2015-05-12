@@ -81,6 +81,7 @@ namespace GitHubServices.Models
             var link = "#" + entry.Title
                 .Replace(" ", "-")
                 .Replace(".", "")
+                .Replace(":", "")
                 .Replace("(","")
                 .Replace(")","")
                 .ToLowerInvariant();
