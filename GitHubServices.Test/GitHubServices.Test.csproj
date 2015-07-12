@@ -46,7 +46,7 @@
     </Reference>
     <Reference Include="StatePrinter, Version=2.1.0.0, Culture=neutral, PublicKeyToken=693eec472ad792e3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\StatePrinter.2.1.207-rc\lib\net35\StatePrinter.dll</HintPath>
+      <HintPath>C:\Users\kbg\Documents\GitHub\StatePrinter\StatePrinter\bin\Debug\StatePrinter.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BusinessLogic\ReplacerTest.cs" />
+    <Compile Include="BusinessLogic\CodeQualityProjectHelper.cs" />
     <Compile Include="BusinessLogic\StatePrinterProjectHelper.cs" />
     <Compile Include="BusinessLogic\TocParserTest.cs" />
     <Compile Include="Controllers\BooControllerTests.cs" />

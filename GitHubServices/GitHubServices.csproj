@@ -127,6 +127,7 @@
     <Compile Include="BusinessLogic\ExceptionHelper.cs" />
     <Compile Include="BusinessLogic\GitHhubBase64.cs" />
     <Compile Include="BusinessLogic\Json\DataJsons.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\TagCollector.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\TocController.cs" />
     <Compile Include="Global.asax.cs">
