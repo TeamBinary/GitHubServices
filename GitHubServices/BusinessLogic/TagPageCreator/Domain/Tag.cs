@@ -1,6 +1,6 @@
 ﻿namespace GitHubServices.BusinessLogic.TagPageCreator.Domain
 {
-    public class Tag : StringDomainObject
+    public class Tag : StringDomainObject<Tag>
     {
         public Tag(string value)
             : base(value)
