@@ -10,23 +10,20 @@ using GitHubServices.BusinessLogic.TagPageCreator.Domain;
 
 namespace GitHubServices.BusinessLogic.TagPageCreator
 {
-    public class PageGenerator
+    public class SiteGenerator
     {
         readonly ContentGenerator generator;
-
         readonly IFilesystemRepository filesystemRepository;
-
         readonly TagCollector collector;
 
-        public PageGenerator(ContentGenerator generator, IFilesystemRepository filesystemRepository, TagCollector collector)
+        public SiteGenerator(ContentGenerator generator, IFilesystemRepository filesystemRepository, TagCollector collector)
         {
             this.generator = generator;
             this.filesystemRepository = filesystemRepository;
             this.collector = collector;
         }
 
-
-        public void GeneratePages(string rootPath)
+        public void GenerateSite(string rootPath)
         {
             var tags = collector.GetTags(rootPath);
 
@@ -37,7 +34,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         void AllTagsPage(string rootPath, TagCollection tags)
         {
-            var allTags = generator.GenerateAllTagsPage(tags.Select(x=>x.Key).ToList());
+            var allTags = generator.GenerateAllTagsPage(tags.Select(x => x.Key).ToList());
             filesystemRepository.WriteFile(Path.Combine(rootPath, "AllTags.md"), allTags);
         }
 
@@ -65,6 +62,8 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         void EmptyTagDirectory(string rootFolder);
 
         void WriteFile(string filepath, string content);
+
+        string ReadFile(string filepath);
     }
 
     public class FilesystemRepository : IFilesystemRepository
@@ -98,6 +97,11 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 File.WriteAllText(filepath, content, new UTF8Encoding(true));
             }
         }
+
+        public string ReadFile(string filepath)
+        {
+            return File.ReadAllText(filepath, new UTF8Encoding());
+        }
     }
 
 
@@ -116,7 +120,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             sb.AppendFormat("## All articles on the site");
             sb.AppendLine();
             sb.AppendLine();
-
             foreach (var group in groups)
             {
                 sb.AppendLine("**" + group.Key + "**");
@@ -138,27 +141,33 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             var sb = new StringBuilder();
             addHeader(sb);
 
-            sb.AppendFormat("## Tags on the site");
+            sb.AppendFormat("## All tags on the site");
             sb.AppendLine();
 
-            char? last = null;
-            foreach (var tag in tags.OrderBy(x=>x.Value))
+            var grouping =
+                tags.OrderBy(x => x.Value)
+                .Select(x => new { Firstchar = FirstChar(x), x.Value })
+                .GroupBy(x => x.Firstchar);
+            
+            foreach (var group in grouping)
             {
-                char firstLetter = tag.Value.Substring(0, 1).ToUpper()[0];
-
-                if (last == null || last != firstLetter)
-                {
-                    sb.AppendLine();
-                    sb.AppendLine(""+firstLetter);
-                    last = firstLetter;
-                }
-                sb.AppendFormat("* [{0}](Tags/{0}.md)", tag);
                 sb.AppendLine();
+                sb.AppendLine("" + group.Key);
+                foreach (var tag in group)
+                {
+                    sb.AppendFormat("* [{0}](Tags/{0}.md)", tag.Value);
+                    sb.AppendLine();
+                }
             }
             AddFooter(sb);
+            
             return sb.ToString();
         }
 
+        static char FirstChar(Tag s)
+        {
+            return s.Value.Substring(0, 1).ToUpper()[0];
+        }
 
         public string GenerateTagPage(Tag tag, List<Page> links)
         {
@@ -171,7 +180,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
             foreach (var link in links)
             {
-                sb.AppendFormat("* [{0}]({1})", link.Title, link.FilePath);
+                sb.AppendFormat("* [{0}](../{1})", link.Title, link.FilePath);
                 sb.AppendLine();
             }
 
@@ -184,6 +193,8 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             sb.AppendLine("# Code Quality & Readability");
             sb.AppendLine("*A site by Kasper B. Graversen*");
+            sb.AppendLine("<br>[[All categories]](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllTags.md) [[All articles]](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllArticles.md)");
+
             sb.AppendLine();
         }
 
@@ -198,6 +209,13 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
     public class TagCollector
     {
+        readonly IFilesystemRepository filesystemRepository;
+
+        public TagCollector(IFilesystemRepository filesystemRepository)
+        {
+            this.filesystemRepository = filesystemRepository;
+        }
+        
         public TagCollection GetTags(string rootFilePath)
         {
             var tagsCollection = new TagCollection();
@@ -205,7 +223,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
             {
                 var relativePath = path.FullName.Substring(rootFilePath.Length);
-                var fileContent = File.ReadAllText(path.FullName);
+                var fileContent = filesystemRepository.ReadFile(path.FullName);
                 var tagsForPage = parsePage(fileContent, relativePath);
                 tagsCollection.Add(tagsForPage);
             }
@@ -217,6 +235,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         readonly Regex headerEx = new Regex("^# (?<title>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
 
         readonly Regex tagEx = new Regex(@"\[!\[Stats\]\(https://img.shields.io/badge/Tag-(?<tagname>.*)-([0-9a-fA-F]){6}\.svg\)\]", RegexOptions.Compiled);
+
 
         TagCollection parsePage(string pageContent, string fullName)
         {

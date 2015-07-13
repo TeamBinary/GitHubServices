@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using GitHubServices.BusinessLogic.TagPageCreator;
 using GitHubServices.Models;
 
 using NUnit.Framework;
-
-using StatePrinter.TestAssistance;
 
 namespace GitHubServices.Test.BusinessLogic
 {
@@ -40,14 +35,20 @@ namespace GitHubServices.Test.BusinessLogic
         [Test]
         public void DeleteThisWhenTheServiceIsRunning_generatePages()
         {
-            var gen = new PageGenerator(new ContentGenerator(), new FilesystemRepository(), new TagCollector());
-            gen.GeneratePages(basepath);
+            var filesystemRepository = new FilesystemRepository();
+
+            var siteGenerator = new SiteGenerator(
+                new ContentGenerator(),
+                filesystemRepository,
+                new TagCollector(filesystemRepository));
+            
+            siteGenerator.GenerateSite(basepath);
         }
 
         [Test]
-        public void MakeTags()
+        public void TagCollector_GetTags()
         {
-            TagCollector co = new TagCollector();
+            TagCollector co = new TagCollector(new FilesystemRepository());
             var tags = co.GetTags(basepath);
             string exp = @"new TagsCollection()
 {
