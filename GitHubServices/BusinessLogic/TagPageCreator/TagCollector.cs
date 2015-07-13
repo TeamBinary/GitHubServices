@@ -1,81 +1,198 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-using Microsoft.Ajax.Utilities;
+using GitHubServices.BusinessLogic.TagPageCreator.Domain;
 
-namespace GitHubServices.Test.BusinessLogic.TagPageCreator
+namespace GitHubServices.BusinessLogic.TagPageCreator
 {
-    public abstract class StringDomainObject
+    public class PageGenerator
     {
-        protected readonly string value;
+        readonly ContentGenerator generator;
 
-        protected StringDomainObject(string value)
+        readonly IFilesystemRepository filesystemRepository;
+
+        readonly TagCollector collector;
+
+        public PageGenerator(ContentGenerator generator, IFilesystemRepository filesystemRepository, TagCollector collector)
         {
-            this.value = value;
+            this.generator = generator;
+            this.filesystemRepository = filesystemRepository;
+            this.collector = collector;
         }
 
-        public override int GetHashCode()
+
+        public void GeneratePages(string rootPath)
         {
-            return value.GetHashCode();
+            var tags = collector.GetTags(rootPath);
+
+            AllArticlesPage(rootPath, tags);
+            TagPages(rootPath, tags);
+            AllTagsPage(rootPath, tags);
         }
 
-        public override bool Equals(object obj)
+        void AllTagsPage(string rootPath, TagCollection tags)
         {
-            return string.Equals(value, (obj as string));
+            var allTags = generator.GenerateAllTagsPage(tags.Select(x=>x.Key).ToList());
+            filesystemRepository.WriteFile(Path.Combine(rootPath, "AllTags.md"), allTags);
         }
 
-        public override string ToString()
+        void TagPages(string rootPath, TagCollection tags)
         {
-            return value;
+            var tagDir = Path.Combine(rootPath, "Tags");
+            filesystemRepository.EmptyTagDirectory(tagDir);
+            
+            foreach (var tag in tags)
+            {
+                var tagPage = generator.GenerateTagPage(tag.Key, tag.Value);
+                filesystemRepository.WriteFile(Path.Combine(tagDir, tag.Key + ".md"), tagPage);
+            }
+        }
+
+        void AllArticlesPage(string rootPath, TagCollection tags)
+        {
+            var allArticles = generator.GenerateAllArticlesPage(tags.SelectMany(x => x.Value).ToList());
+            filesystemRepository.WriteFile(Path.Combine(rootPath, "AllArticles.md"), allArticles);
         }
     }
 
-    public class TagPageGenerator
+    public interface IFilesystemRepository
     {
-        public string GenerateAllTagsPage(Dictionary<string, string> tagToUrl)
+        void EmptyTagDirectory(string rootFolder);
+
+        void WriteFile(string filepath, string content);
+    }
+
+    public class FilesystemRepository : IFilesystemRepository
+    {
+        public void EmptyTagDirectory(string tagDir)
         {
-            
+            if (Directory.Exists(tagDir))
+            {
+                var directory = new DirectoryInfo(tagDir);
+                foreach (FileInfo file in directory.GetFiles())
+                    file.Delete();
+                Directory.Delete(tagDir);
+            }
+            Directory.CreateDirectory(tagDir);
         }
 
-        public string GenerateTagPage(string tag, List<Page> links)
+        public void WriteFile(string filepath, string content)
+        {
+            bool write = false;
+            if (!File.Exists(filepath))
+                write = true;
+            else
+            {
+                if (File.ReadAllText(filepath) != content)
+                    write = true;
+            }
+
+            if (write)
+            {
+                Console.WriteLine("Writing " + filepath);
+                File.WriteAllText(filepath, content, new UTF8Encoding(true));
+            }
+        }
+    }
+
+
+    public class ContentGenerator
+    {
+        public string GenerateAllArticlesPage(List<Page> pages)
+        {
+            var groups = pages.Distinct()
+                .OrderBy(x => x.Path)
+                .ThenBy(x => x.Title)
+                .GroupBy(x=> x.Path);
+
+            var sb = new StringBuilder();
+            addHeader(sb);
+
+            sb.AppendFormat("## All articles on the site");
+            sb.AppendLine();
+            sb.AppendLine();
+
+            foreach (var group in groups)
+            {
+                sb.AppendLine("**" + group.Key + "**");
+                foreach (var page in group)
+                {
+                    sb.AppendFormat("* [{0}]({1})", page.Title, page.FilePath);
+                    sb.AppendLine();
+                }
+                sb.AppendLine();
+                sb.AppendLine();
+            }
+
+            AddFooter(sb);
+            return sb.ToString();
+        }
+
+        public string GenerateAllTagsPage(List<Tag> tags)
         {
             var sb = new StringBuilder();
-            sb.AppendFormat("# Pages tagged with **{0}**", tag);
+            addHeader(sb);
+
+            sb.AppendFormat("## Tags on the site");
+            sb.AppendLine();
+
+            char? last = null;
+            foreach (var tag in tags.OrderBy(x=>x.Value))
+            {
+                char firstLetter = tag.Value.Substring(0, 1).ToUpper()[0];
+
+                if (last == null || last != firstLetter)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine(""+firstLetter);
+                    last = firstLetter;
+                }
+                sb.AppendFormat("* [{0}](Tags/{0}.md)", tag);
+                sb.AppendLine();
+            }
+            AddFooter(sb);
+            return sb.ToString();
+        }
+
+
+        public string GenerateTagPage(Tag tag, List<Page> links)
+        {
+            var sb = new StringBuilder();
+            addHeader(sb);
+
+            sb.AppendFormat("## Pages tagged with **{0}**", tag);
             sb.AppendLine();
             sb.AppendLine();
 
             foreach (var link in links)
             {
-                sb.AppendFormat("* [{0}]({1})", link.Name, link.FilePath);
+                sb.AppendFormat("* [{0}]({1})", link.Title, link.FilePath);
                 sb.AppendLine();
             }
-            sb.AppendLine();
-            sb.AppendLine();
-            sb.AppendLine();
-            sb.AppendLine("This file is auto generated - do not edit..");
 
+            AddFooter(sb);
             return sb.ToString();
         }
-    }
 
-    public class Tag : StringDomainObject
-    {
-        public Tag(string value)
-            : base(value)
+
+        void addHeader(StringBuilder sb)
         {
+            sb.AppendLine("# Code Quality & Readability");
+            sb.AppendLine("*A site by Kasper B. Graversen*");
+            sb.AppendLine();
         }
 
-        public string Value
+        static void AddFooter(StringBuilder sb)
         {
-            get
-            {
-                return value;
-            }
+            sb.AppendLine();
+            sb.AppendLine();
+            sb.AppendLine();
+            sb.AppendLine("*This file is auto generated - do not edit..*");
         }
     }
 
@@ -109,7 +226,7 @@ namespace GitHubServices.Test.BusinessLogic.TagPageCreator
 
             foreach (Match match in tagEx.Matches(pageContent))
             {
-                var tag = match.Groups["tagname"].Value;
+                var tag = new Tag(match.Groups["tagname"].Value);
                 tags.Add(tag, new Page(title, fullName));
             }
 
@@ -118,50 +235,40 @@ namespace GitHubServices.Test.BusinessLogic.TagPageCreator
     }
 
 
-    public class TagCollection
+    public class TagCollection : IEnumerable<KeyValuePair<Tag,List<Page>>>
     {
-        public Dictionary<string, List<Page>> TagToPages = new Dictionary<string, List<Page>>();
+        readonly Dictionary<Tag, List<Page>> Tags = new Dictionary<Tag, List<Page>>();
+        readonly Dictionary<string, Tag> lowerCaseDistinct = new Dictionary<string, Tag>(); 
 
-        public void Add(string tag, params Page[] url)
+        public void Add(Tag tag, params Page[] url)
         {
+            Tag distinctTag;
+            if (!lowerCaseDistinct.TryGetValue(tag.Value.ToLower(), out distinctTag))
+            {
+                distinctTag = tag;
+                lowerCaseDistinct.Add(tag.Value.ToLower(), tag);
+            }
+
             List<Page> urls;
-            if (!TagToPages.TryGetValue(tag, out urls))
-                TagToPages.Add(tag, urls = new List<Page>());
+            if (!Tags.TryGetValue(distinctTag, out urls))
+                Tags.Add(tag, urls = new List<Page>());
             urls.AddRange(url);
         }
 
         public void Add(TagCollection tagsForPage)
         {
-            foreach (var kv in tagsForPage.TagToPages)
+            foreach (var kv in tagsForPage.Tags)
                 Add(kv.Key, kv.Value.ToArray());
         }
-    }
 
-    public class Page : IEquatable<Page>
-    {
-        public readonly string Name;
-        public readonly string FilePath;
-
-        public Page(string name, string filePath)
+        public IEnumerator<KeyValuePair<Tag, List<Page>>> GetEnumerator()
         {
-            Name = name;
-            FilePath = filePath;
+            return Tags.GetEnumerator();
         }
 
-        public override int GetHashCode()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return Name.GetHashCode() ^ FilePath.GetHashCode();
-        }
-
-        public bool Equals(Page other)
-        {
-            if (other == null) return false;
-            return Name == other.Name && FilePath == other.FilePath;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as Page);
+            return GetEnumerator();
         }
     }
 }

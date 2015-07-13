@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using GitHubServices.BusinessLogic.TagPageCreator;
 using GitHubServices.Models;
-using GitHubServices.Test.BusinessLogic.TagPageCreator;
 
 using NUnit.Framework;
 
@@ -38,7 +38,14 @@ namespace GitHubServices.Test.BusinessLogic
 
 
         [Test]
-        public void DeleteThisWhenTheServiceIsRunning_makeTags()
+        public void DeleteThisWhenTheServiceIsRunning_generatePages()
+        {
+            var gen = new PageGenerator(new ContentGenerator(), new FilesystemRepository(), new TagCollector());
+            gen.GeneratePages(basepath);
+        }
+
+        [Test]
+        public void MakeTags()
         {
             TagCollector co = new TagCollector();
             var tags = co.GetTags(basepath);
@@ -74,7 +81,7 @@ namespace GitHubServices.Test.BusinessLogic
 }";
 
             var assert = Create.Assert();
-            assert.Configuration.Test.SetAutomaticTestRewrite(x=>true);
+            assert.Configuration.Test.SetAutomaticTestRewrite(x => false);
             assert.PrintEquals(exp, tags);
         }
 

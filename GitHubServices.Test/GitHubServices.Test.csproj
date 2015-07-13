@@ -68,8 +68,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BusinessLogic\ReplacerTest.cs" />
-    <Compile Include="BusinessLogic\CodeQualityProjectHelper.cs" />
-    <Compile Include="BusinessLogic\StatePrinterProjectHelper.cs" />
+    <Compile Include="TempProjectHelpers\CodeQualityProjectHelper.cs" />
+    <Compile Include="TempProjectHelpers\StatePrinterProjectHelper.cs" />
     <Compile Include="BusinessLogic\TocParserTest.cs" />
     <Compile Include="Controllers\BooControllerTests.cs" />
     <Compile Include="Controllers\TocControllerTests.cs" />
