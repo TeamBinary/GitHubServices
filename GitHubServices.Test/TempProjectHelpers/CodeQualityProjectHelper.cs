@@ -40,7 +40,8 @@ namespace GitHubServices.Test.BusinessLogic
             var siteGenerator = new SiteGenerator(
                 new ContentGenerator(),
                 filesystemRepository,
-                new TagCollector(filesystemRepository));
+                new TagCollector(filesystemRepository),
+                new MarkDownMutator(filesystemRepository));
             
             siteGenerator.GenerateSite(basepath);
         }

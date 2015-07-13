@@ -16,17 +16,21 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         readonly IFilesystemRepository filesystemRepository;
         readonly TagCollector collector;
 
-        public SiteGenerator(ContentGenerator generator, IFilesystemRepository filesystemRepository, TagCollector collector)
+        readonly MarkDownMutator mutator;
+
+        public SiteGenerator(ContentGenerator generator, IFilesystemRepository filesystemRepository, TagCollector collector, MarkDownMutator mutator)
         {
             this.generator = generator;
             this.filesystemRepository = filesystemRepository;
             this.collector = collector;
+            this.mutator = mutator;
         }
 
         public void GenerateSite(string rootPath)
         {
             var tags = collector.GetTags(rootPath);
 
+            mutator.MutateTagLinks(rootPath);
             AllArticlesPage(rootPath, tags);
             TagPages(rootPath, tags);
             AllTagsPage(rootPath, tags);
@@ -198,7 +202,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             sb.AppendLine();
         }
 
-        static void AddFooter(StringBuilder sb)
+        void AddFooter(StringBuilder sb)
         {
             sb.AppendLine();
             sb.AppendLine();
@@ -232,9 +236,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         }
 
 
-        readonly Regex headerEx = new Regex("^# (?<title>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
+        static readonly Regex headerEx = new Regex("^# (?<title>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
 
-        readonly Regex tagEx = new Regex(@"\[!\[Stats\]\(https://img.shields.io/badge/Tag-(?<tagname>.*)-([0-9a-fA-F]){6}\.svg\)\]", RegexOptions.Compiled);
+        static readonly Regex tagEx = new Regex(@"\[!\[Stats\]\(https://img.shields.io/badge/Tag-(?<tagname>.*)-([0-9a-fA-F]){6}\.svg\)\]", RegexOptions.Compiled);
 
 
         TagCollection parsePage(string pageContent, string fullName)
@@ -253,6 +257,39 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         }
     }
 
+    public class MarkDownMutator
+    {
+        readonly IFilesystemRepository filesystemRepository;
+
+        static readonly Regex tagEx =
+            new Regex(
+                @"(?<wholeTag>\[!\[Stats\]\(https://img.shields.io/badge/Tag-(?<tagname>.*)-([0-9a-fA-F]){6}\.svg\)\])\(.*\)",
+                RegexOptions.Compiled | RegexOptions.Multiline);
+
+        public MarkDownMutator(IFilesystemRepository filesystemRepository)
+        {
+            this.filesystemRepository = filesystemRepository;
+        }
+
+        public void MutateTagLinks(string rootFilePath)
+        {
+            var di = new DirectoryInfo(rootFilePath);
+            foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
+            {
+                var fileContent = filesystemRepository.ReadFile(path.FullName);
+                var content = tagEx.Replace(
+                    fileContent,
+                    x =>
+                    string.Format(
+                        "{0}({1}{2}.md)",
+                        x.Groups["wholeTag"].Value,
+                        "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/Tags/",
+                        x.Groups["tagname"].Value));
+                filesystemRepository.WriteFile(path.FullName, content);
+            }
+            
+        }
+    }
 
     public class TagCollection : IEnumerable<KeyValuePair<Tag,List<Page>>>
     {
