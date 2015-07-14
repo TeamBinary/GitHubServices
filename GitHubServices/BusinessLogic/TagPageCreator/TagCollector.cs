@@ -197,7 +197,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             sb.AppendLine("# Code Quality & Readability");
             sb.AppendLine("*A site by Kasper B. Graversen*");
-            sb.AppendLine("<br>[[All categories]](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllTags.md) [[All articles]](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllArticles.md)");
+            sb.AppendLine("<br>[[Introduction]](https://github.com/kbilsted/CodeQualityAndReadability) [[All categories]](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllTags.md) [[All articles]](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllArticles.md)");
 
             sb.AppendLine();
         }
