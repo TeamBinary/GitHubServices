@@ -10,7 +10,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator.Domain
 
         public Page(string title, string filePath)
         {
-            Title = title;
+            if (title.EndsWith("#"))
+                title = title.Substring(0, title.Length - 1);
+            Title = title.Trim();
             FilePath = filePath.Replace("\\", "/");
             Path = System.IO.Path.GetDirectoryName(filePath).Replace("\\", "/");
         }
