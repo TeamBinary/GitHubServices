@@ -159,7 +159,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 sb.AppendLine("" + group.Key);
                 foreach (var tag in group)
                 {
-                    sb.AppendFormat("* [{0}](Tags/{0}.md)", tag.Value);
+                    sb.AppendFormat("* [{0}](Tags/{1}.md)", tag.Value.Replace("_"," "), tag.Value);
                     sb.AppendLine();
                 }
             }
