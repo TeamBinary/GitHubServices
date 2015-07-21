@@ -31,7 +31,7 @@ namespace GitHubServices.Models
 
     public class TocParser
     {
-        static readonly Regex TocRex = new Regex("(?<level>#+)( |\t)+(?<title>.*)", RegexOptions.Multiline | RegexOptions.Compiled);
+        static readonly Regex TocRex = new Regex("^(?<level>#+)( |\t)+(?<title>.*)", RegexOptions.Multiline | RegexOptions.Compiled);
 
         public string MakeToc(string content)
         {

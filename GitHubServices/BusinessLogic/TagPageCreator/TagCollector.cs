@@ -30,7 +30,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             var tags = collector.GetTags(rootPath);
 
-            mutator.MutateTagLinks(rootPath);
+            mutator.Mutate(rootPath);
             AllArticlesPage(rootPath, tags);
             TagPages(rootPath, tags);
             AllTagsPage(rootPath, tags);
@@ -145,7 +145,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             var sb = new StringBuilder();
             addHeader(sb);
 
-            sb.AppendFormat("## All tags on the site");
+            sb.AppendFormat("## All categories on the site");
             sb.AppendLine();
 
             var grouping =
@@ -266,28 +266,95 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 @"(?<wholeTag>\[!\[Stats\]\(https://img.shields.io/badge/Tag-(?<tagname>.*)-([0-9a-fA-F]){6}\.svg\)\])\(.*\)",
                 RegexOptions.Compiled | RegexOptions.Multiline);
 
+        static readonly Regex SocialButtonShareEx =
+      new Regex(@"<SocialShareButtons>[^<]+</SocialShareButtons>",
+          RegexOptions.Compiled | RegexOptions.Singleline);
+
+
+        static readonly Regex CommentTextEx =
+new Regex(@"<CommentText>[^<]+</CommentText>",
+    RegexOptions.Compiled | RegexOptions.Singleline);
+
+
         public MarkDownMutator(IFilesystemRepository filesystemRepository)
         {
             this.filesystemRepository = filesystemRepository;
         }
 
-        public void MutateTagLinks(string rootFilePath)
+        public void Mutate(string rootFilePath)
         {
-            var di = new DirectoryInfo(rootFilePath);
-            foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
-            {
-                var fileContent = filesystemRepository.ReadFile(path.FullName);
-                var content = tagEx.Replace(
-                    fileContent,
-                    x =>
-                    string.Format(
-                        "{0}({1}{2}.md)",
-                        x.Groups["wholeTag"].Value,
-                        "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/Tags/",
-                        x.Groups["tagname"].Value));
-                filesystemRepository.WriteFile(path.FullName, content);
-            }
-            
+          var di = new DirectoryInfo(rootFilePath);
+          foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
+          {
+            var fileContent = filesystemRepository.ReadFile(path.FullName);
+
+            fileContent = MutateSocialLinks(rootFilePath, fileContent, path);
+            fileContent = MutateTagLinks(rootFilePath, fileContent);
+            fileContent = MutateCommentText(fileContent);
+
+            filesystemRepository.WriteFile(path.FullName, fileContent);
+
+          }
+        }
+
+        string MutateCommentText(string fileContent)
+        {
+            var content = CommentTextEx.Replace(
+            fileContent,
+            x =>
+            string.Format(@"<{0}>
+**Comments, corrections and other editorial changes are very welcome. Just log onto Github, press the edit button and fire away. Have I left out important information about your favorite langue, press the edit button. Are there wordings that definitely are not english, press the edit button. Do you have something to elaborate.. press the edit button!! :-)**
+
+*Comments should go below this line (and use the following template).*
+
+Name: Bubba Jones
+> text..  
+> text..  
+
+</{0}>",
+"CommentText"));
+
+
+            return content;
+        }
+
+
+        string MutateSocialLinks(string rootFilePath, string fileContent, FileInfo path)
+        {
+          var url = "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/" + path.FullName.Substring(rootFilePath.Length).Replace('\\', '/');
+          
+          string title = new string(fileContent.TakeWhile(x=>x!='\n').ToArray()).Substring(1).Trim();
+          title = title.Replace(" ", "%20");
+
+          var content = SocialButtonShareEx.Replace(
+              fileContent,
+              x =>
+              string.Format(@"<{0}>
+[![Tweet this]({1}twitter.png)](https://twitter.com/intent/tweet?url={2}&text={3}&via=kbilsted) 
+[![Googleplus this]({1}gplus.png)](https://plus.google.com/share?url={2}) 
+[![Facebook this]({1}facebook.png)](https://facebook.com/sharer.php?u={2}) 
+[![LinkedIn this]({1}linkedin.png)](http://www.linkedin.com/shareArticle?mini=true&url={2}) 
+
+
+</{0}>",
+"SocialShareButtons",
+"https://github.com/kbilsted/CodeQualityAndReadability/blob/master/img/", url, title));
+
+
+          return content;
+        }
+
+        string MutateTagLinks(string rootFilePath, string fileContent)
+        {
+          var content = tagEx.Replace(
+              fileContent,
+              x =>
+              string.Format(
+                  "{0}({1}{2}.md)",
+                  x.Groups["wholeTag"].Value,
+                  "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/Tags/",
+                  x.Groups["tagname"].Value));
+          return content;
         }
     }
 
