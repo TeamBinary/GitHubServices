@@ -330,10 +330,12 @@ Name: Bubba Jones
               fileContent,
               x =>
               string.Format(@"<{0}>
-[![Tweet this]({1}twitter.png)](https://twitter.com/intent/tweet?url={2}&text={3}&via=kbilsted) 
-[![Googleplus this]({1}gplus.png)](https://plus.google.com/share?url={2}) 
-[![Facebook this]({1}facebook.png)](https://facebook.com/sharer.php?u={2}) 
-[![LinkedIn this]({1}linkedin.png)](http://www.linkedin.com/shareArticle?mini=true&url={2}) 
+
+[![Reddit this]({1}reddit.png)](https://www.reddit.com/submit?url={2})
+[![Tweet this]({1}twitter.png)](https://twitter.com/intent/tweet?url={2}&text={3}&via=kbilsted)
+[![Googleplus this]({1}gplus.png)](https://plus.google.com/share?url={2})
+[![Facebook this]({1}facebook.png)](https://facebook.com/sharer.php?u={2})
+[![LinkedIn this]({1}linkedin.png)](http://www.linkedin.com/shareArticle?mini=true&url={2})
 
 
 </{0}>",
