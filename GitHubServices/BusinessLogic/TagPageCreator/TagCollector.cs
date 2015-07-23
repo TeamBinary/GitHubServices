@@ -46,7 +46,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             var tagDir = Path.Combine(rootPath, "Tags");
             filesystemRepository.EmptyTagDirectory(tagDir);
-            
+
             foreach (var tag in tags)
             {
                 var tagPage = generator.GenerateTagPage(tag.Key, tag.Value);
@@ -116,7 +116,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             var groups = pages.Distinct()
                 .OrderBy(x => x.Path)
                 .ThenBy(x => x.Title)
-                .GroupBy(x=> x.Path);
+                .GroupBy(x => x.Path);
 
             var sb = new StringBuilder();
             addHeader(sb);
@@ -152,19 +152,19 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 tags.OrderBy(x => x.Value)
                 .Select(x => new { Firstchar = FirstChar(x), x.Value })
                 .GroupBy(x => x.Firstchar);
-            
+
             foreach (var group in grouping)
             {
                 sb.AppendLine();
                 sb.AppendLine("" + group.Key);
                 foreach (var tag in group)
                 {
-                    sb.AppendFormat("* [{0}](Tags/{1}.md)", tag.Value.Replace("_"," "), tag.Value);
+                    sb.AppendFormat("* [{0}](Tags/{1}.md)", tag.Value.Replace("_", " "), tag.Value);
                     sb.AppendLine();
                 }
             }
             AddFooter(sb);
-            
+
             return sb.ToString();
         }
 
@@ -219,7 +219,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             this.filesystemRepository = filesystemRepository;
         }
-        
+
         public TagCollection GetTags(string rootFilePath)
         {
             var tagsCollection = new TagCollection();
@@ -270,6 +270,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
       new Regex(@"<SocialShareButtons>[^<]+</SocialShareButtons>",
           RegexOptions.Compiled | RegexOptions.Singleline);
 
+        static readonly Regex CategoryButtonsEx =
+      new Regex(@"<Categories Tags=""(?<tags>[^""]*)"">[^<]+</Categories>",
+          RegexOptions.Compiled | RegexOptions.Singleline);
 
         static readonly Regex CommentTextEx =
 new Regex(@"<CommentText>[^<]+</CommentText>",
@@ -283,18 +286,18 @@ new Regex(@"<CommentText>[^<]+</CommentText>",
 
         public void Mutate(string rootFilePath)
         {
-          var di = new DirectoryInfo(rootFilePath);
-          foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
-          {
-            var fileContent = filesystemRepository.ReadFile(path.FullName);
+            var di = new DirectoryInfo(rootFilePath);
+            foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
+            {
+                var fileContent = filesystemRepository.ReadFile(path.FullName);
 
-            fileContent = MutateSocialLinks(rootFilePath, fileContent, path);
-            fileContent = MutateTagLinks(rootFilePath, fileContent);
-            fileContent = MutateCommentText(fileContent);
+                fileContent = MutateSocialLinks(rootFilePath, fileContent, path);
+                fileContent = MutateTagLinks(rootFilePath, fileContent);
+                fileContent = MutateCommentText(fileContent);
+                fileContent = MutateCategoryTags(fileContent);
+                filesystemRepository.WriteFile(path.FullName, fileContent);
 
-            filesystemRepository.WriteFile(path.FullName, fileContent);
-
-          }
+            }
         }
 
         string MutateCommentText(string fileContent)
@@ -319,17 +322,48 @@ Name: Bubba Jones
         }
 
 
+        string MutateCategoryTags(string fileContent)
+        {
+
+            var content = CategoryButtonsEx.Replace(
+               fileContent,
+               x =>
+               {
+                   var tagsArgument = x.Groups["tags"].Value;
+                   Tag[] parsedTags = tagsArgument
+                       .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                       .Select(y => new Tag(y.Trim()))
+                       .ToArray();
+                   var sb = new StringBuilder();
+                   foreach(var tag in parsedTags)
+                       sb.Append(MakeATag(tag));
+
+                   return string.Format(@"<{0} Tags=""{1}"">
+{2}</{0}>",
+    "Categories",
+    tagsArgument, sb.ToString());
+               }
+);
+
+            return content;
+        }
+
+        string MakeATag(Tag tag)
+        {
+            return string.Format("[![Stats](https://img.shields.io/badge/Tag-{0}-99CC00.svg)](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/Tags/{0}.md)\r\n", tag.Value);
+        }
+
         string MutateSocialLinks(string rootFilePath, string fileContent, FileInfo path)
         {
-          var url = "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/" + path.FullName.Substring(rootFilePath.Length).Replace('\\', '/');
-          
-          string title = new string(fileContent.TakeWhile(x=>x!='\n').ToArray()).Substring(1).Trim();
-          title = title.Replace(" ", "%20");
+            var url = "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/" + path.FullName.Substring(rootFilePath.Length).Replace('\\', '/');
 
-          var content = SocialButtonShareEx.Replace(
-              fileContent,
-              x =>
-              string.Format(@"<{0}>
+            string title = new string(fileContent.TakeWhile(x => x != '\n').ToArray()).Substring(1).Trim();
+            title = title.Replace(" ", "%20");
+
+            var content = SocialButtonShareEx.Replace(
+                fileContent,
+                x =>
+                string.Format(@"Please show your support by sharing and voting: <{0}>
 
 [![Reddit this]({1}reddit.png)](https://www.reddit.com/submit?url={2})
 [![Tweet this]({1}twitter.png)](https://twitter.com/intent/tweet?url={2}&text={3}&via=kbilsted)
@@ -339,31 +373,31 @@ Name: Bubba Jones
 
 
 </{0}>",
-"SocialShareButtons",
-"https://github.com/kbilsted/CodeQualityAndReadability/blob/master/img/", url, title));
+  "SocialShareButtons",
+  "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/img/", url, title));
 
 
-          return content;
+            return content;
         }
 
         string MutateTagLinks(string rootFilePath, string fileContent)
         {
-          var content = tagEx.Replace(
-              fileContent,
-              x =>
-              string.Format(
-                  "{0}({1}{2}.md)",
-                  x.Groups["wholeTag"].Value,
-                  "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/Tags/",
-                  x.Groups["tagname"].Value));
-          return content;
+            var content = tagEx.Replace(
+                fileContent,
+                x =>
+                string.Format(
+                    "{0}({1}{2}.md)",
+                    x.Groups["wholeTag"].Value,
+                    "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/Tags/",
+                    x.Groups["tagname"].Value));
+            return content;
         }
     }
 
-    public class TagCollection : IEnumerable<KeyValuePair<Tag,List<Page>>>
+    public class TagCollection : IEnumerable<KeyValuePair<Tag, List<Page>>>
     {
         readonly Dictionary<Tag, List<Page>> Tags = new Dictionary<Tag, List<Page>>();
-        readonly Dictionary<string, Tag> lowerCaseDistinct = new Dictionary<string, Tag>(); 
+        readonly Dictionary<string, Tag> lowerCaseDistinct = new Dictionary<string, Tag>();
 
         public void Add(Tag tag, params Page[] url)
         {
