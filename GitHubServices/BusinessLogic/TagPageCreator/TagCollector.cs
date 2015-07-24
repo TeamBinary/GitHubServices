@@ -261,11 +261,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
     {
         readonly IFilesystemRepository filesystemRepository;
 
-        static readonly Regex tagEx =
-            new Regex(
-                @"(?<wholeTag>\[!\[Stats\]\(https://img.shields.io/badge/Tag-(?<tagname>.*)-([0-9a-fA-F]){6}\.svg\)\])\(.*\)",
-                RegexOptions.Compiled | RegexOptions.Multiline);
-
         static readonly Regex SocialButtonShareEx =
       new Regex(@"<SocialShareButtons>[^<]+</SocialShareButtons>",
           RegexOptions.Compiled | RegexOptions.Singleline);
@@ -292,7 +287,6 @@ new Regex(@"<CommentText>[^<]+</CommentText>",
                 var fileContent = filesystemRepository.ReadFile(path.FullName);
 
                 fileContent = MutateSocialLinks(rootFilePath, fileContent, path);
-                fileContent = MutateTagLinks(rootFilePath, fileContent);
                 fileContent = MutateCommentText(fileContent);
                 fileContent = MutateCategoryTags(fileContent);
                 filesystemRepository.WriteFile(path.FullName, fileContent);
@@ -335,15 +329,14 @@ Name: Bubba Jones
                        .Select(y => new Tag(y.Trim()))
                        .ToArray();
                    var sb = new StringBuilder();
-                   foreach(var tag in parsedTags)
+                   foreach (var tag in parsedTags)
                        sb.Append(MakeATag(tag));
 
                    return string.Format(@"<{0} Tags=""{1}"">
 {2}</{0}>",
     "Categories",
     tagsArgument, sb.ToString());
-               }
-);
+               });
 
             return content;
         }
@@ -363,33 +356,19 @@ Name: Bubba Jones
             var content = SocialButtonShareEx.Replace(
                 fileContent,
                 x =>
-                string.Format(@"Please show your support by sharing and voting: <{0}>
-
-[![Reddit this]({1}reddit.png)](https://www.reddit.com/submit?url={2})
+                string.Format(@"<{0}>
+[![Reddit this]({1}reddit.png)](https://www.reddit.com/submit?url={2}&title={3})
 [![Tweet this]({1}twitter.png)](https://twitter.com/intent/tweet?url={2}&text={3}&via=kbilsted)
 [![Googleplus this]({1}gplus.png)](https://plus.google.com/share?url={2})
-[![Facebook this]({1}facebook.png)](https://facebook.com/sharer.php?u={2})
+[![Facebook this]({1}facebook.png)](https://facebook.com/sharer.php?u={2}&t={3})
 [![LinkedIn this]({1}linkedin.png)](http://www.linkedin.com/shareArticle?mini=true&url={2})
-
-
+[![Feedly this]({1}feedly.png)](http://cloud.feedly.com/#subscription%2Ffeed%2F{2})
+[![Ycombinator this]({1}ycombinator.png)](http://news.ycombinator.com/submitlink?u={2}&t={3})
 </{0}>",
   "SocialShareButtons",
   "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/img/", url, title));
 
 
-            return content;
-        }
-
-        string MutateTagLinks(string rootFilePath, string fileContent)
-        {
-            var content = tagEx.Replace(
-                fileContent,
-                x =>
-                string.Format(
-                    "{0}({1}{2}.md)",
-                    x.Groups["wholeTag"].Value,
-                    "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/Tags/",
-                    x.Groups["tagname"].Value));
             return content;
         }
     }
