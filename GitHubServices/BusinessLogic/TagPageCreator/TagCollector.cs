@@ -300,7 +300,7 @@ new Regex(@"<CommentText>[^<]+</CommentText>",
             fileContent,
             x =>
             string.Format(@"<{0}>
-**Comments, corrections and other editorial changes are very welcome. Just log onto Github, press the edit button and fire away. Have I left out important information about your favorite langue, press the edit button. Are there wordings that definitely are not english, press the edit button. Do you have something to elaborate.. press the edit button!! :-)**
+**Comments, corrections and other editorial changes are very welcome. Just log onto Github, press the edit button and fire away. Have I left out important information about your favourite language, press the edit button. Are there wordings that definitely are not English, press the edit button. Do you have something to elaborate.. press the edit button!! :-)**
 
 *Comments should go below this line (and use the following template).*
 
