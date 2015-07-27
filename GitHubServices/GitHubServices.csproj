@@ -127,10 +127,14 @@
     <Compile Include="BusinessLogic\ExceptionHelper.cs" />
     <Compile Include="BusinessLogic\GitHhubBase64.cs" />
     <Compile Include="BusinessLogic\Json\DataJsons.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\ContentGenerator.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\DocumentParser.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\Domain\Page.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\Domain\StringDomainObject.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\Domain\Tag.cs" />
-    <Compile Include="BusinessLogic\TagPageCreator\TagCollector.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\FilesystemRepository.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\MarkDownMutator.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\SiteGenerator.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\TocController.cs" />
     <Compile Include="Global.asax.cs">

@@ -4,7 +4,9 @@ using System.Collections.Generic;
 
 namespace GitHubServices.BusinessLogic.TagPageCreator.Domain
 {
-    public abstract class StringDomainObject<T> : IEquatable<StringDomainObject<T>>, IComparable<StringDomainObject<T>>, IEnumerable<char>
+    [Serializable]
+    public class StringDomainObject<T> : IEquatable<StringDomainObject<T>>, IComparable<StringDomainObject<T>>, IEnumerable<char>
+        where T : StringDomainObject<T>
     {
         protected readonly string value;
 
@@ -46,6 +48,25 @@ namespace GitHubServices.BusinessLogic.TagPageCreator.Domain
         public override string ToString()
         {
             return value;
+        }
+
+        public static T operator +(StringDomainObject<T> a, StringDomainObject<T> b)
+        {
+            return a.New(a.value + b.value);
+        }
+        public static bool operator ==(StringDomainObject<T> a, StringDomainObject<T> b)
+        {
+            return a.value == b.value;
+        }
+
+        public static bool operator !=(StringDomainObject<T> a, StringDomainObject<T> b)
+        {
+            return !(a == b);
+        }
+
+        protected virtual T New(string a)
+        {
+            throw new NotImplementedException("Must be implemented in subclasses");
         }
     }
 }

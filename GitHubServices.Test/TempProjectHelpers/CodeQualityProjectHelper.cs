@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 
 using GitHubServices.BusinessLogic.TagPageCreator;
+using GitHubServices.BusinessLogic.TagPageCreator.Domain;
 using GitHubServices.Models;
 
 using NUnit.Framework;
@@ -24,6 +25,8 @@ namespace GitHubServices.Test.BusinessLogic
             DirectoryInfo di = new DirectoryInfo(basepath);
             foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
             {
+                if (path.FullName.Contains(Path.DirectorySeparatorChar + "Tags" + Path.DirectorySeparatorChar))
+                    continue;
                 if(path.FullName.EndsWith("Readme.md"))
                     continue;
                 Console.Write(path.FullName);
@@ -37,19 +40,23 @@ namespace GitHubServices.Test.BusinessLogic
         {
             var filesystemRepository = new FilesystemRepository();
 
+            var contentGenerator = new ContentGenerator();
+            var documentParser = new DocumentParser(filesystemRepository);
+
             var siteGenerator = new SiteGenerator(
-                new ContentGenerator(),
+                contentGenerator,
                 filesystemRepository,
-                new TagCollector(filesystemRepository),
-                new MarkDownMutator(filesystemRepository));
+                documentParser,
+                new MarkDownMutator(filesystemRepository, contentGenerator, documentParser));
             
             siteGenerator.GenerateSite(basepath);
         }
 
+        [Explicit]
         [Test]
         public void TagCollector_GetTags()
         {
-            TagCollector co = new TagCollector(new FilesystemRepository());
+            DocumentParser co = new DocumentParser(new FilesystemRepository());
             var tags = co.GetTags(basepath);
             string exp = @"new TagsCollection()
 {
