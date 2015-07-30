@@ -42,16 +42,36 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 if (fileContent.StartsWith("draft"))
                     continue;
 
-                fileContent = MutateSocialLinks(rootFilePath, fileContent, path);
+                var relativePath = path.FullName.Substring(rootFilePath.Length).Replace('\\', '/');
+
+                fileContent = MutateSocialLinks(fileContent, relativePath);
                 fileContent = MutateCommentText(fileContent);
                 fileContent = MutateCategoryTags(fileContent);
-                filesystemRepository.WriteFile(path.FullName, fileContent);
+                fileContent = MutateFileFooter(fileContent, relativePath);
 
+                filesystemRepository.WriteFile(path.FullName, fileContent);
             }
+        }
+
+        string MutateFileFooter(string fileContent, string relativePath)
+        {
+            string path = relativePath.Replace(" ", "_").Replace("/", "_");
+
+            string footer = string.Format(@"
+
+Read the [Introduction](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/README.md) or browse the rest [of the site](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllArticles.md)
+<br>
+[![Analytics](https://ga-beacon.appspot.com/UA-65034248-2/QualityAndReadability/{0})](https://github.com/igrigorik/ga-beacon)
+", path);
+            if (!fileContent.EndsWith(footer))
+                fileContent += footer;
+
+            return fileContent;
         }
 
         string MutateCommentText(string fileContent)
         {
+
             var content = CommentTextEx.Replace(
                 fileContent,
                 x =>
@@ -99,9 +119,9 @@ Name: Bubba Jones
             return content;
         }
 
-        string MutateSocialLinks(string rootFilePath, string fileContent, FileInfo path)
+        string MutateSocialLinks(string fileContent, string relativePath)
         {
-            var url = "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/" + path.FullName.Substring(rootFilePath.Length).Replace('\\', '/');
+            var url = "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/" + relativePath;
 
             string title = new string(fileContent.TakeWhile(x => x != '\n').ToArray()).Substring(1).Trim();
             title = title.Replace(" ", "%20");
