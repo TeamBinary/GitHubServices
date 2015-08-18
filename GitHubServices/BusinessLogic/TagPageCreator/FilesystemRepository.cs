@@ -23,9 +23,10 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 var directory = new DirectoryInfo(tagDir);
                 foreach (FileInfo file in directory.GetFiles())
                     file.Delete();
-                Directory.Delete(tagDir);
             }
-            Directory.CreateDirectory(tagDir);
+
+            if (!Directory.Exists(tagDir))
+                Directory.CreateDirectory(tagDir);
         }
 
         public void WriteFile(string filepath, string content)

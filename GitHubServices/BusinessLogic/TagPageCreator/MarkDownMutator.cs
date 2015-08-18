@@ -63,7 +63,7 @@ Read the [Introduction](https://github.com/kbilsted/CodeQualityAndReadability/bl
 <br>
 [![Analytics](https://ga-beacon.appspot.com/UA-65034248-2/QualityAndReadability/{0})](https://github.com/igrigorik/ga-beacon)
 ", path);
-            if (!fileContent.EndsWith(footer))
+            if (!fileContent.Contains(footer))
                 fileContent += footer;
 
             return fileContent;

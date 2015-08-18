@@ -48,7 +48,8 @@ namespace GitHubServices.Models
                 return tocString;
 
             var markdownedTocLines = parsedToc.Select(x => Markdowned(x));
-            tocString += Environment.NewLine + string.Join(Environment.NewLine, markdownedTocLines) + Environment.NewLine;
+            tocString += Environment.NewLine + Environment.NewLine + string.Join(Environment.NewLine, markdownedTocLines)
+                         + Environment.NewLine;
 
             return tocString;
         }
@@ -77,13 +78,15 @@ namespace GitHubServices.Models
 
         string Markdowned(TocEntry entry)
         {
-            var space = entry.Level.Replace("#", "  ").Substring(1);
+            string space = entry.Level == "" ? "" : entry.Level.Replace("#", "  ").Substring(1);
             var link = "#" + entry.Title
                 .Replace(" ", "-")
                 .Replace(".", "")
                 .Replace(",", "")
                 .Replace(":", "")
                 .Replace("!", "")
+                .Replace("/", "")
+                .Replace("\"", "")
                 .Replace("`", "")
                 .Replace("(","")
                 .Replace(")","")
