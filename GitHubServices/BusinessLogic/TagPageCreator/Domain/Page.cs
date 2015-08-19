@@ -6,6 +6,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator.Domain
     {
         public readonly string Title;
         public readonly string FilePath;
+        public readonly string FilePathWithHtmlExtension;
         public readonly string Path;
 
         public Page(string title, string filePath)
@@ -14,6 +15,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator.Domain
                 title = title.Substring(0, title.Length - 1);
             Title = title.Trim();
             FilePath = filePath.Replace("\\", "/");
+            FilePathWithHtmlExtension = FilePath.Substring(0, FilePath.Length - 3) + ".html";
             Path = System.IO.Path.GetDirectoryName(filePath).Replace("\\", "/");
         }
 

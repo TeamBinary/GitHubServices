@@ -24,9 +24,10 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             foreach (var group in groups)
             {
                 sb.AppendLine("**" + group.Key + "**");
+                sb.AppendLine("");
                 foreach (var page in group)
                 {
-                    sb.AppendFormat("* [{0}]({1})", page.Title, page.FilePath);
+                    sb.AppendFormat("* [{0}]({1})", page.Title, page.FilePathWithHtmlExtension);
                     sb.AppendLine();
                 }
                 sb.AppendLine();
@@ -53,7 +54,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             foreach (var group in grouping)
             {
                 sb.AppendLine();
+                sb.AppendLine();
                 sb.AppendLine("" + group.Key);
+                sb.AppendLine();
                 foreach (var tag in group)
                 {
                     sb.AppendFormat("* {0}", CreateCategoryLink(tag.Tag));
@@ -69,7 +72,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             return
                 string.Format(
-                    "[![Tag](https://img.shields.io/badge/-{0}-{1}.svg)](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/Tags/{0}.md)",
+                    "[![Tag](https://img.shields.io/badge/-{0}-{1}.svg)](http://kbilsted.github.io/CodeQualityAndReadability/Tags/{0}.html)",
                     tag.Value,
                     tag.HexCodeForValue);
 
@@ -90,7 +93,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
             foreach (var link in links)
             {
-                sb.AppendFormat("* [{0}](../{1})", link.Title, link.FilePath);
+                sb.AppendFormat("* [{0}](../{1})", link.Title, link.FilePathWithHtmlExtension);
                 sb.AppendLine();
             }
 
@@ -103,7 +106,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             sb.AppendLine("# Code Quality & Readability");
             sb.AppendLine("*A site (mostly) by Kasper B. Graversen*");
-            sb.AppendLine("<br>[[Introduction]](https://github.com/kbilsted/CodeQualityAndReadability) [[All categories]](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllTags.md) [[All articles]](https://github.com/kbilsted/CodeQualityAndReadability/blob/master/AllArticles.md)");
+            sb.AppendLine("<br>[[Introduction]](http://kbilsted.github.io/CodeQualityAndReadability/) [[All categories]](http://kbilsted.github.io/CodeQualityAndReadability/AllTags.html) [[All articles]](http://kbilsted.github.io/CodeQualityAndReadability/AllArticles.html)");
 
             sb.AppendLine();
         }

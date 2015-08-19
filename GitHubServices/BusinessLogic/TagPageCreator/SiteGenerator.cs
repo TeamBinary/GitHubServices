@@ -18,38 +18,74 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             this.mutator = mutator;
         }
 
-        public void GenerateSite(string rootPath)
+        public void GenerateSite(ReadWritePaths rootPath)
         {
-            var tags = parser.GetTags(rootPath);
+            var tags = parser.GetTags(rootPath.ReadPath);
 
-            mutator.Mutate(rootPath);
-            AllArticlesPage(rootPath, tags);
-            TagPages(rootPath, tags);
-            AllTagsPage(rootPath, tags);
+            CopyImmutableFiles(rootPath);
+            mutator.Mutate(rootPath, tags);
+            AllArticlesPage(rootPath.WritePath, tags);
+            TagPages(rootPath.WritePath, tags);
+            AllTagsPage(rootPath.WritePath, tags);
         }
 
-        void AllTagsPage(string rootPath, TagCollection tags)
+        void CopyImmutableFiles(ReadWritePaths rootPath)
+        {
+            var di = new DirectoryInfo(rootPath.ReadPath);
+            foreach (var path in di.EnumerateFiles("*.*", SearchOption.AllDirectories))
+            {
+                if (IsToCopy(path))
+                {
+                    var relativePath = path.FullName.Substring(rootPath.ReadPath.Length);
+                    filesystemRepository.Copy(path.FullName, Path.Combine(rootPath.WritePath, relativePath));
+                }
+            }
+
+        }
+
+        bool IsToCopy(FileInfo path)
+        {
+            string ext = path.Extension.ToLower();
+            var isImage = ext == ".png" || ext == ".jpeg" || ext == ".gif" || ext == ".jpg";
+            var isRelevant= ext == ".css" ;
+            return isImage || isRelevant;
+        }
+
+        void AllTagsPage(string writePath, TagCollection tags)
         {
             var allTags = generator.GenerateAllTagsPage(tags.Select(x => x.Key).ToList());
-            filesystemRepository.WriteFile(Path.Combine(rootPath, "AllTags.md"), allTags);
+            filesystemRepository.WriteFile(Path.Combine(writePath, "AllTags.md"), allTags);
         }
 
-        void TagPages(string rootPath, TagCollection tags)
+        void TagPages(string writePath, TagCollection tags)
         {
-            var tagDir = Path.Combine(rootPath, "Tags");
+            var tagDir = Path.Combine(writePath, "Tags");
             filesystemRepository.EmptyTagDirectory(tagDir);
             
             foreach (var tag in tags)
             {
                 var tagPage = generator.GenerateTagPage(tag.Key, tag.Value);
-                filesystemRepository.WriteFile(Path.Combine(tagDir, tag.Key + ".md"), tagPage);
+                filesystemRepository.WriteFile(Path.Combine(tagDir, tag.Key + ".html"), tagPage);
             }
         }
 
-        void AllArticlesPage(string rootPath, TagCollection tags)
+        void AllArticlesPage(string writePath, TagCollection tags)
         {
             var allArticles = generator.GenerateAllArticlesPage(tags.SelectMany(x => x.Value).ToList());
-            filesystemRepository.WriteFile(Path.Combine(rootPath, "AllArticles.md"), allArticles);
+            filesystemRepository.WriteFile(Path.Combine(writePath, "AllArticles.md"), allArticles);
         }
     }
+
+
+    public class ReadWritePaths
+    {
+        public readonly string ReadPath, WritePath;
+
+        public ReadWritePaths(string readPath, string writePath)
+        {
+            ReadPath = readPath;
+            WritePath = writePath;
+        }
+    }
+
 }

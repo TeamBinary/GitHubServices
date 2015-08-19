@@ -17,12 +17,13 @@ namespace GitHubServices.Test.BusinessLogic
     [TestFixture]
     class CodeQualityProjectHelper
     {
-        readonly string basepath = @"C:\Users\kbg\Documents\GitHub\CodeQualityAndReadability\";
+        readonly string readPath = @"C:\Users\kbg\Documents\GitHub\CodeQualityAndReadability\";
+        readonly string writePath = @"C:\Users\kbg\Documents\GitHub\CodeQualityAndReadability-gh-pages\";
 
         [Test]
         public void DeleteThisWhenTheServiceIsRunning_makeToc()
         {
-            DirectoryInfo di = new DirectoryInfo(basepath);
+            DirectoryInfo di = new DirectoryInfo(readPath);
             foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
             {
                 if (path.FullName.Contains(Path.DirectorySeparatorChar + "Tags" + Path.DirectorySeparatorChar))
@@ -30,7 +31,7 @@ namespace GitHubServices.Test.BusinessLogic
                 if(path.FullName.EndsWith("Readme.md"))
                     continue;
                 Console.Write(path.FullName);
-                Handle(path.FullName);
+                MutateTocSection(path.FullName);
             }
         }
 
@@ -38,7 +39,7 @@ namespace GitHubServices.Test.BusinessLogic
         [Test]
         public void DeleteThisWhenTheServiceIsRunning_generatePages()
         {
-            var filesystemRepository = new FilesystemRepository();
+            var filesystemRepository = new HtmlWriter();
 
             var contentGenerator = new ContentGenerator();
             var documentParser = new DocumentParser(filesystemRepository);
@@ -49,7 +50,7 @@ namespace GitHubServices.Test.BusinessLogic
                 documentParser,
                 new MarkDownMutator(filesystemRepository, contentGenerator, documentParser));
             
-            siteGenerator.GenerateSite(basepath);
+            siteGenerator.GenerateSite(new ReadWritePaths(readPath, writePath));
         }
 
         [Explicit]
@@ -57,7 +58,7 @@ namespace GitHubServices.Test.BusinessLogic
         public void TagCollector_GetTags()
         {
             DocumentParser co = new DocumentParser(new FilesystemRepository());
-            var tags = co.GetTags(basepath);
+            var tags = co.GetTags(readPath);
             string exp = @"new TagsCollection()
 {
     Pages[""Design""] = new List<Page>()
@@ -94,7 +95,7 @@ namespace GitHubServices.Test.BusinessLogic
             assert.PrintEquals(exp, tags);
         }
 
-        void Handle(string path)
+        void MutateTocSection(string path)
         {
             var content = File.ReadAllText(path);
 
