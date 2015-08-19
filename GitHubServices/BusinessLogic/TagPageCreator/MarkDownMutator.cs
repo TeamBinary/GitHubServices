@@ -51,9 +51,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 fileContent = MutateCommentText(fileContent);
                 fileContent = MutateCategoryTags(fileContent);
                 fileContent = MutateAllTagsLine(fileContent, tags);
-                //fileContent = MutateFileFooter(fileContent, relativePath);
 
-                filesystemRepository.WriteFile(Path.Combine(rootFilePath.WritePath, relativePath), fileContent);
+                var title = documentParser.ParsePageTitle(fileContent);
+                filesystemRepository.WriteFile(Path.Combine(rootFilePath.WritePath, relativePath), fileContent, title);
             }
         }
 
@@ -71,12 +71,28 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         string MutateCommentText(string fileContent)
         {
 
+            var textBody = @"**Corrections and other editorial changes are very welcome. Just log onto Github, press the edit button and fire away. Have I left out important information about your favourite language, press the edit button. Are there wordings that definitely are not English, press the edit button. Do you have something to elaborate.. press the edit button!! :-)**
+
+";
+
+            var disqusStuff = @"<div id=""disqus_thread""></div>
+<script type=""text/javascript"">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'qualityandreadability';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href=""https://disqus.com/?ref_noscript"" rel=""nofollow"">comments powered by Disqus.</a></noscript>";
+
             var content = CommentTextEx.Replace(
                 fileContent,
                 x =>
-                @"**Corrections and other editorial changes are very welcome. Just log onto Github, press the edit button and fire away. Have I left out important information about your favourite language, press the edit button. Are there wordings that definitely are not English, press the edit button. Do you have something to elaborate.. press the edit button!! :-)**
-
-");
+                textBody + disqusStuff);
 
             return content;
         }

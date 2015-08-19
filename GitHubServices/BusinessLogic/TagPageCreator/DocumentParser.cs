@@ -32,7 +32,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 if(fileContent.StartsWith("draft"))
                     continue;
 
-                var tagsForPage = parsePage(fileContent, relativePath);
+                var tagsForPage = ParsePage(fileContent, relativePath);
                 tags.Add(tagsForPage);
             }
 
@@ -48,12 +48,19 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
     @"<Categories Tags=""(?<tags>[^""]*)"">[^<]+</Categories>",
     Options);
 
-        TagCollection parsePage(string pageContent, string fullName)
+        public string ParsePageTitle(string pageContent)
         {
-            TagCollection tags = new TagCollection();
             Match headerMatch = headerEx.Match(pageContent);
             var title = headerMatch.Groups["title"].Value.Trim();
 
+            return title;
+        }
+
+        TagCollection ParsePage(string pageContent, string fullName)
+        {
+            var title = ParsePageTitle(pageContent);
+
+            TagCollection tags = new TagCollection();
             foreach (Tag tag in GetTagsFromContent(pageContent))
                 tags.Add(tag, new Page(title, fullName));
 

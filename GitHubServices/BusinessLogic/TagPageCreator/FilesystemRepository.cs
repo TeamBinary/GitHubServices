@@ -11,7 +11,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
     {
         void EmptyTagDirectory(string tagDir);
 
-        void WriteFile(string filepath, string content);
+        void WriteFile(string filepath, string content, string pageTitle);
 
         string ReadFile(string filepath);
 
@@ -33,7 +33,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 Directory.CreateDirectory(tagDir);
         }
 
-        public void WriteFile(string filepath, string content)
+        public void WriteFile(string filepath, string content, string pageTitle="")
         {
             bool write = false;
             if (!File.Exists(filepath))
@@ -80,14 +80,14 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 Directory.CreateDirectory(tagDir);
         }
 
-        public void WriteFile(string filepath, string content)
+        public void WriteFile(string filepath, string content, string pageTitle)
         {
             var path = Path.GetDirectoryName(filepath);
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
             var destination = Path.Combine(path , Path.GetFileNameWithoutExtension(filepath) )+ ".html";
-            var html = transformer.MarkdownToHtml(content);
+            var html = transformer.MarkdownToHtml(content, pageTitle);
             File.WriteAllText(destination, html, new UTF8Encoding(true));
         }
 
@@ -107,7 +107,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         class HtmlTransformer
         {
-            Markdown md = new MarkdownDeep.Markdown()
+            readonly Markdown md = new Markdown()
                               {
                                   ExtraMode = true,
                                   SafeMode = false,
@@ -118,7 +118,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                                           code),
                               };
 
-            public string MarkdownToHtml(string markdownContent)
+            public string MarkdownToHtml(string markdownContent, string pageTitle)
             {
                 string footer = @"<br>
 <br>
@@ -127,8 +127,9 @@ Read the [Introduction](http://kbilsted.github.io/CodeQualityAndReadability/) or
 ";
                 string html = md.Transform(markdownContent + footer);
 
-                string htmlWithCss = string.Format(@"
-<html>
+                string htmlWithCss = string.Format(@"<html>
+<head>
+<title>{0}</title>
 <script src=""https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js""></script>
 <link rel=""stylesheet"" href=""http://kbilsted.github.io/CodeQualityAndReadability/github-markdown.css"">
 <style>
@@ -139,13 +140,16 @@ Read the [Introduction](http://kbilsted.github.io/CodeQualityAndReadability/) or
                 padding: 30px;
             }}
 </style>
+</head>
+<body>
 <article class=""markdown-body"">
 
-{0}
+{1}
 
 
 </article>
-</html>", html);
+</body>
+</html>", pageTitle, html);
 
                 return htmlWithCss;
             }

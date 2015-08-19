@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
+using GitHubServices.BusinessLogic.TagPageCreator.Domain;
 
 namespace GitHubServices.BusinessLogic.TagPageCreator
 {
@@ -54,7 +57,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         void AllTagsPage(string writePath, TagCollection tags)
         {
             var allTags = generator.GenerateAllTagsPage(tags.Select(x => x.Key).ToList());
-            filesystemRepository.WriteFile(Path.Combine(writePath, "AllTags.md"), allTags);
+            filesystemRepository.WriteFile(Path.Combine(writePath, "AllTags.md"), allTags, "All categories on Quality and Readability");
         }
 
         void TagPages(string writePath, TagCollection tags)
@@ -62,17 +65,17 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             var tagDir = Path.Combine(writePath, "Tags");
             filesystemRepository.EmptyTagDirectory(tagDir);
             
-            foreach (var tag in tags)
+            foreach (KeyValuePair<Tag, List<Page>> tag in tags)
             {
                 var tagPage = generator.GenerateTagPage(tag.Key, tag.Value);
-                filesystemRepository.WriteFile(Path.Combine(tagDir, tag.Key + ".html"), tagPage);
+                filesystemRepository.WriteFile(Path.Combine(tagDir, tag.Key + ".html"), tagPage, "Pages related to "+ tag.Key.Value);
             }
         }
 
         void AllArticlesPage(string writePath, TagCollection tags)
         {
             var allArticles = generator.GenerateAllArticlesPage(tags.SelectMany(x => x.Value).ToList());
-            filesystemRepository.WriteFile(Path.Combine(writePath, "AllArticles.md"), allArticles);
+            filesystemRepository.WriteFile(Path.Combine(writePath, "AllArticles.md"), allArticles, "All articles on Quality and Readability");
         }
     }
 
