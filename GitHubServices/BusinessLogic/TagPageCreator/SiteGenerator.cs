@@ -49,8 +49,8 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         bool IsToCopy(FileInfo path)
         {
             string ext = path.Extension.ToLower();
-            var isImage = ext == ".png" || ext == ".jpeg" || ext == ".gif" || ext == ".jpg";
-            var isRelevant= ext == ".css" ;
+            var isImage = ext == ".png" || ext == ".jpeg" || ext == ".gif" || ext == ".jpg" || ext == ".ico";
+            var isRelevant= ext == ".css" || path.FullName.EndsWith("CNAME");
             return isImage || isRelevant;
         }
 
