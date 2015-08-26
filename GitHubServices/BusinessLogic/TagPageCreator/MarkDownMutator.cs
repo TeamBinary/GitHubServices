@@ -48,7 +48,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 var relativePath = path.FullName.Substring(rootFilePath.ReadPath.Length).Replace('\\', '/');
 
                 fileContent = MutateSocialLinks(fileContent, relativePath);
-                fileContent = MutateCommentText(fileContent);
+                fileContent = MutateCommentText(fileContent, relativePath);
                 fileContent = MutateCategoryTags(fileContent);
                 fileContent = MutateAllTagsLine(fileContent, tags);
 
@@ -68,12 +68,14 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             return content;
         }
 
-        string MutateCommentText(string fileContent)
+        string MutateCommentText(string fileContent, string relativeReadPath)
         {
+            string url = "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/" + relativeReadPath;
+            var textBody = string.Format(@"**Corrections and other editorial changes are very welcome. <a href=""{0}"">Just go to Github, press the edit button and fire away.</a> 
+Have I left out important information about your favourite language, press the edit button. Are there wordings that definitely are not English, press the edit button. 
+Do you have something to elaborate.. press the edit button!! :-)**
 
-            var textBody = @"**Corrections and other editorial changes are very welcome. Just log onto Github, press the edit button and fire away. Have I left out important information about your favourite language, press the edit button. Are there wordings that definitely are not English, press the edit button. Do you have something to elaborate.. press the edit button!! :-)**
-
-";
+<br>", url);
 
             var disqusStuff = @"<div id=""disqus_thread""></div>
 <script type=""text/javascript"">
