@@ -80,7 +80,6 @@ namespace GitHubServices.Models
         {
             string space = entry.Level == "" ? "" : entry.Level.Replace("#", "  ").Substring(1);
             var link = "#" + entry.Title
-                .Replace(" ", "-")
                 .Replace(".", "")
                 .Replace(",", "")
                 .Replace(":", "")
@@ -90,6 +89,22 @@ namespace GitHubServices.Models
                 .Replace("`", "")
                 .Replace("(","")
                 .Replace(")","")
+
+                // for markdowndeep start
+                .Replace("0", "")
+                .Replace("1", "")
+                .Replace("2", "")
+                .Replace("3", "")
+                .Replace("4", "")
+                .Replace("5", "")
+                .Replace("6", "")
+                .Replace("7", "")
+                .Replace("8", "")
+                .Replace("9", "")
+                .Trim()
+                // for markdowndeep end
+
+                .Replace(" ", "-")
                 .ToLowerInvariant();
 
             return string.Format("{0}* [{1}]({2})", space, entry.Title, link);
