@@ -35,7 +35,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             this.documentParser = documentParser;
         }
 
-        public void Mutate(ReadWritePaths rootFilePath, TagCollection tags)
+        public void Mutate(ReadWritePaths rootFilePath, TagCollection tags, string baseUrl, string editBaseUrl)
         {
             var di = new DirectoryInfo(rootFilePath.ReadPath);
             foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
@@ -47,30 +47,30 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
                 var relativePath = path.FullName.Substring(rootFilePath.ReadPath.Length).Replace('\\', '/');
 
-                fileContent = MutateSocialLinks(fileContent, relativePath);
-                fileContent = MutateCommentText(fileContent, relativePath);
-                fileContent = MutateCategoryTags(fileContent);
-                fileContent = MutateAllTagsLine(fileContent, tags);
+                fileContent = MutateSocialLinks(fileContent, baseUrl, relativePath);
+                fileContent = MutateCommentText(fileContent, relativePath, editBaseUrl);
+                fileContent = MutateCategoryTags(fileContent, baseUrl);
+                fileContent = MutateAllTagsLine(fileContent, tags, baseUrl);
 
                 var title = documentParser.ParsePageTitle(fileContent);
                 filesystemRepository.WriteFile(Path.Combine(rootFilePath.WritePath, relativePath), fileContent, title);
             }
         }
 
-        string MutateAllTagsLine(string fileContent, TagCollection tags)
+        string MutateAllTagsLine(string fileContent, TagCollection tags, string baseUrl)
         {
             var content = AllTagsEx.Replace(
                 fileContent,
                 z => string.Join(" ", tags
                     .Select(x => x.Key)
                     .OrderBy(x=>x.Value)
-                    .Select(x => contentGenerator.CreateCategoryLink(x))));
+                    .Select(x => contentGenerator.CreateCategoryLink(x, baseUrl))));
             return content;
         }
 
-        string MutateCommentText(string fileContent, string relativeReadPath)
+        string MutateCommentText(string fileContent, string relativeReadPath, string editBaseUrl)
         {
-            string url = "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/" + relativeReadPath;
+            string url = editBaseUrl + relativeReadPath;
             var textBody = string.Format(@"**Corrections and other editorial changes are very welcome. <a href=""{0}"">Just go to Github, press the edit button and fire away.</a> 
 Have I left out important information about your favourite language, press the edit button. Are there wordings that definitely are not English, press the edit button. 
 Do you have something to elaborate.. press the edit button!! :-)**
@@ -103,7 +103,7 @@ Do you have something to elaborate.. press the edit button!! :-)**
 
 
 
-        string MutateCategoryTags(string fileContent)
+        string MutateCategoryTags(string fileContent, string baseUrl)
         {
 
             var content = DocumentParser.CategoryEx.Replace(
@@ -114,7 +114,7 @@ Do you have something to elaborate.. press the edit button!! :-)**
                         var sb = new StringBuilder();
                         foreach (var tag in parsedTags)
                         {
-                            sb.Append(contentGenerator.CreateCategoryLink(tag));
+                            sb.Append(contentGenerator.CreateCategoryLink(tag, baseUrl));
                             sb.Append(Environment.NewLine);
                         }
 
@@ -124,9 +124,9 @@ Do you have something to elaborate.. press the edit button!! :-)**
             return content;
         }
 
-        string MutateSocialLinks(string fileContent, string relativePath)
+        string MutateSocialLinks(string fileContent, string baseUrl, string relativePath)
         {
-            var url = string.Format("http://kbilsted.github.io/CodeQualityAndReadability/{0}.html", relativePath.Substring(0, relativePath.Length-3));
+            var url = string.Format("{0}{1}.html", baseUrl, relativePath.Substring(0, relativePath.Length-3));
 
             string title = new string(fileContent.TakeWhile(x => x != '\n').ToArray()).Substring(1).Trim();
             title = title.Replace(" ", "%20");
@@ -142,8 +142,7 @@ Do you have something to elaborate.. press the edit button!! :-)**
 [![LinkedIn this]({0}linkedin.png)](http://www.linkedin.com/shareArticle?mini=true&url={1})
 [![Feedly this]({0}feedly.png)](http://cloud.feedly.com/#subscription%2Ffeed%2F{1})
 [![Ycombinator this]({0}ycombinator.png)](http://news.ycombinator.com/submitlink?u={1}&t={2})
-",
-                    "http://kbilsted.github.io/CodeQualityAndReadability/img/", url, title));
+", baseUrl+"img/", url, title));
 
 
             return content;

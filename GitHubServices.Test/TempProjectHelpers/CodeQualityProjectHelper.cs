@@ -20,6 +20,10 @@ namespace GitHubServices.Test.BusinessLogic
         readonly string readPath = @"C:\Users\kbg\Documents\GitHub\CodeQualityAndReadability\";
         readonly string writePath = @"C:\Users\kbg\Documents\GitHub\CodeQualityAndReadability-gh-pages\";
 
+        readonly string baseUrl = @"http://firstclassthoughts.co.uk/";
+
+        readonly string editBaseUrl = "https://github.com/kbilsted/CodeQualityAndReadability/blob/master/";
+
         [Test]
         public void DeleteThisWhenTheServiceIsRunning_makeToc()
         {
@@ -39,7 +43,7 @@ namespace GitHubServices.Test.BusinessLogic
         [Test]
         public void DeleteThisWhenTheServiceIsRunning_generatePages()
         {
-            var filesystemRepository = new HtmlWriter();
+            var filesystemRepository = new HtmlWriter(baseUrl);
 
             var contentGenerator = new ContentGenerator();
             var documentParser = new DocumentParser(filesystemRepository);
@@ -50,7 +54,7 @@ namespace GitHubServices.Test.BusinessLogic
                 documentParser,
                 new MarkDownMutator(filesystemRepository, contentGenerator, documentParser));
             
-            siteGenerator.GenerateSite(new ReadWritePaths(readPath, writePath));
+            siteGenerator.GenerateSite(new ReadWritePaths(readPath, writePath), baseUrl, editBaseUrl);
         }
 
         [Explicit]

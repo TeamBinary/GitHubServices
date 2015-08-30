@@ -21,15 +21,15 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             this.mutator = mutator;
         }
 
-        public void GenerateSite(ReadWritePaths rootPath)
+        public void GenerateSite(ReadWritePaths rootPath, string baseUrl, string editBaseUrl)
         {
             var tags = parser.GetTags(rootPath.ReadPath);
 
             CopyImmutableFiles(rootPath);
-            mutator.Mutate(rootPath, tags);
-            AllArticlesPage(rootPath.WritePath, tags);
-            TagPages(rootPath.WritePath, tags);
-            AllTagsPage(rootPath.WritePath, tags);
+            mutator.Mutate(rootPath, tags, baseUrl, editBaseUrl);
+            AllArticlesPage(rootPath.WritePath, tags, baseUrl);
+            TagPages(rootPath.WritePath, tags, baseUrl);
+            AllTagsPage(rootPath.WritePath, tags, baseUrl);
         }
 
         void CopyImmutableFiles(ReadWritePaths rootPath)
@@ -54,27 +54,28 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             return isImage || isRelevant;
         }
 
-        void AllTagsPage(string writePath, TagCollection tags)
+
+        void AllTagsPage(string writePath, TagCollection tags, string baseUrl)
         {
-            var allTags = generator.GenerateAllTagsPage(tags.Select(x => x.Key).ToList());
+            var allTags = generator.GenerateAllTagsPage(tags.Select(x => x.Key).ToList(), baseUrl);
             filesystemRepository.WriteFile(Path.Combine(writePath, "AllTags.md"), allTags, "All categories on Quality and Readability");
         }
 
-        void TagPages(string writePath, TagCollection tags)
+        void TagPages(string writePath, TagCollection tags, string baseUrl)
         {
             var tagDir = Path.Combine(writePath, "Tags");
             filesystemRepository.EmptyTagDirectory(tagDir);
             
             foreach (KeyValuePair<Tag, List<Page>> tag in tags)
             {
-                var tagPage = generator.GenerateTagPage(tag.Key, tag.Value);
+                var tagPage = generator.GenerateTagPage(tag.Key, tag.Value, baseUrl);
                 filesystemRepository.WriteFile(Path.Combine(tagDir, tag.Key + ".html"), tagPage, "Pages related to "+ tag.Key.Value);
             }
         }
 
-        void AllArticlesPage(string writePath, TagCollection tags)
+        void AllArticlesPage(string writePath, TagCollection tags, string baseUrl)
         {
-            var allArticles = generator.GenerateAllArticlesPage(tags.SelectMany(x => x.Value).ToList());
+            var allArticles = generator.GenerateAllArticlesPage(tags.SelectMany(x => x.Value).ToList(), baseUrl);
             filesystemRepository.WriteFile(Path.Combine(writePath, "AllArticles.md"), allArticles, "All articles on Quality and Readability");
         }
     }

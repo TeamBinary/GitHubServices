@@ -8,7 +8,8 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 {
     public class ContentGenerator
     {
-        public string GenerateAllArticlesPage(List<Page> pages)
+
+        public string GenerateAllArticlesPage(List<Page> pages, string baseUrl)
         {
             var groups = pages.Distinct()
                 .OrderBy(x => x.Path)
@@ -16,7 +17,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 .GroupBy(x=> x.Path);
 
             var sb = new StringBuilder();
-            AddHeader(sb);
+            AddHeader(sb, baseUrl);
 
             sb.AppendFormat("## All articles on the site");
             sb.AppendLine();
@@ -38,10 +39,10 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             return sb.ToString();
         }
 
-        public string GenerateAllTagsPage(List<Tag> tags)
+        public string GenerateAllTagsPage(List<Tag> tags, string baseUrl)
         {
             var sb = new StringBuilder();
-            AddHeader(sb);
+            AddHeader(sb, baseUrl);
 
             sb.AppendFormat("## All categories on the site");
             sb.AppendLine();
@@ -59,7 +60,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 sb.AppendLine();
                 foreach (var tag in group)
                 {
-                    sb.AppendFormat("* {0}", CreateCategoryLink(tag.Tag));
+                    sb.AppendFormat("* {0}", CreateCategoryLink(tag.Tag, baseUrl));
                     sb.AppendLine();
                 }
             }
@@ -68,13 +69,14 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             return sb.ToString();
         }
 
-        public string CreateCategoryLink(Tag tag)
+        public string CreateCategoryLink(Tag tag, string baseUrl)
         {
             return
                 string.Format(
-                    "[![Tag](https://img.shields.io/badge/-{0}-{1}.svg)](http://kbilsted.github.io/CodeQualityAndReadability/Tags/{0}.html)",
+                    "[![Tag](https://img.shields.io/badge/-{0}-{1}.svg)]({2}CodeQualityAndReadability/Tags/{0}.html)",
                     tag.Value,
-                    tag.HexCodeForValue);
+                    tag.HexCodeForValue, 
+                    baseUrl);
 
         }
         static char FirstChar(Tag s)
@@ -82,10 +84,10 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             return s.Value.Substring(0, 1).ToUpper()[0];
         }
 
-        public string GenerateTagPage(Tag tag, List<Page> links)
+        public string GenerateTagPage(Tag tag, List<Page> links, string baseUrl)
         {
             var sb = new StringBuilder();
-            AddHeader(sb);
+            AddHeader(sb, baseUrl);
 
             sb.AppendFormat("## Pages tagged with **{0}**", tag.Value.Replace("_"," "));
             sb.AppendLine();
@@ -102,12 +104,12 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         }
 
 
-        void AddHeader(StringBuilder sb)
+        void AddHeader(StringBuilder sb, string baseUrl)
         {
             sb.AppendLine("# Code Quality & Readability");
             sb.AppendLine("*A site (mostly) by Kasper B. Graversen*");
-            sb.AppendLine("<br>[[Introduction]](http://kbilsted.github.io/CodeQualityAndReadability/) [[All categories]](http://kbilsted.github.io/CodeQualityAndReadability/AllTags.html) [[All articles]](http://kbilsted.github.io/CodeQualityAndReadability/AllArticles.html)");
-
+            sb.AppendFormat("<br>[[Introduction]]({0}) [[All categories]]({0}AllTags.html) [[All articles]]({0}AllArticles.html)", baseUrl);
+            sb.AppendLine();
             sb.AppendLine();
         }
 
@@ -116,7 +118,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             sb.AppendLine();
             sb.AppendLine();
             sb.AppendLine();
-            //sb.AppendLine("*This file is auto generated - do not edit..*");
         }
     }
 }

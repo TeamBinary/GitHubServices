@@ -67,6 +67,13 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
     {
         readonly HtmlTransformer transformer = new HtmlTransformer();
 
+        readonly string baseUrl;
+
+        public HtmlWriter(string baseUrl)
+        {
+            this.baseUrl = baseUrl;
+        }
+
         public void EmptyTagDirectory(string tagDir)
         {
             if (Directory.Exists(tagDir))
@@ -87,7 +94,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 Directory.CreateDirectory(path);
 
             var destination = Path.Combine(path , Path.GetFileNameWithoutExtension(filepath) )+ ".html";
-            var html = transformer.MarkdownToHtml(content, pageTitle);
+            var html = transformer.MarkdownToHtml(content, pageTitle, baseUrl);
             File.WriteAllText(destination, html, new UTF8Encoding(true));
         }
 
@@ -116,22 +123,34 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                                       (m, code) => string.Format(
                                           "<pre class=\"prettyprint\"><code>{0}</code></pre>\n",
                                           code),
+
                               };
 
-            public string MarkdownToHtml(string markdownContent, string pageTitle)
+            public string MarkdownToHtml(string markdownContent, string pageTitle, string baseUrl)
             {
-                string footer = @"<br>
+                string footer = String.Format(@"<br>
 <br>
-Read the [Introduction](http://kbilsted.github.io/CodeQualityAndReadability/) or browse the rest [of the site](http://kbilsted.github.io/CodeQualityAndReadability/AllArticles.html)
+Read the [Introduction]({0}) or browse the rest [of the site]({0}AllArticles.html)
 <br>
-";
+", baseUrl);
                 string html = md.Transform(markdownContent + footer);
+                string googleAnalytics = @"
+<script>
+  (function(i,s,o,g,r,a,m){{i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){{
+  (i[r].q=i[r].q||[]).push(arguments)}},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  }})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+  ga('create', 'UA-66546851-1', 'auto');
+  ga('send', 'pageview');
+</script>
+";
                 string htmlWithCss = string.Format(@"<html>
 <head>
 <title>{0}</title>
 <script src=""https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js""></script>
-<link rel=""stylesheet"" href=""http://kbilsted.github.io/CodeQualityAndReadability/github-markdown.css"">
+<link rel=""stylesheet"" href=""{3}github-markdown.css"">
+<link rel='shortcut icon' type='image/x-icon' href='{3}favicon.ico' />
 <style>
       .markdown-body {{
                 min-width: 200px;
@@ -140,16 +159,19 @@ Read the [Introduction](http://kbilsted.github.io/CodeQualityAndReadability/) or
                 padding: 30px;
             }}
 </style>
+
+{1}
+
 </head>
 <body>
 <article class=""markdown-body"">
 
-{1}
+{2}
 
 
 </article>
 </body>
-</html>", pageTitle, html);
+</html>", pageTitle, googleAnalytics, html, baseUrl);
 
                 return htmlWithCss;
             }
