@@ -80,7 +80,6 @@ namespace GitHubServices.Models
         {
             string space = entry.Level == "" ? "" : entry.Level.Replace("#", "  ").Substring(1);
             var link = "#" + entry.Title
-                .Trim()
                 .Replace(".", "")
                 .Replace(",", "")
                 .Replace(":", "")
@@ -90,6 +89,7 @@ namespace GitHubServices.Models
                 .Replace("`", "")
                 .Replace("(", "")
                 .Replace(")", "")
+                .Trim()
                 .Replace(" ", "-")
                 .ToLowerInvariant();
 
@@ -101,8 +101,7 @@ namespace GitHubServices.Models
         {
             Regex stuffRemover = new Regex("(`[^`]*`)|(\\d+)");
             string space = entry.Level == "" ? "" : entry.Level.Replace("#", "  ").Substring(1);
-            var link = "#" + stuffRemover.Replace(entry.Title, x=>"")
-                .Trim()
+            var link = "#" + stuffRemover.Replace(entry.Title, x=> "")
                 .Replace(".", "")
                 .Replace(",", "")
                 .Replace(":", "")
@@ -112,6 +111,7 @@ namespace GitHubServices.Models
                 .Replace("`", "")
                 .Replace("(", "")
                 .Replace(")", "")
+                .Trim()
                 .Replace(" ", "-")
                 .ToLowerInvariant();
 
