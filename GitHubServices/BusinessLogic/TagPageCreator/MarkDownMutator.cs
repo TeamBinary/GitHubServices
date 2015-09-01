@@ -18,14 +18,16 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         static readonly RegexOptions Options = RegexOptions.Compiled | RegexOptions.Singleline;
 
         static readonly Regex SocialButtonShareEx = new Regex(
-            @"<SocialShareButtons>[^<]+</SocialShareButtons>",
+            "<SocialShareButtons>[^<]+</SocialShareButtons>",
             Options);
 
         static readonly Regex CommentTextEx = new Regex(
-            @"<CommentText>[^<]+</CommentText>",
+            "<CommentText>[^<]+</CommentText>",
             Options);
 
         static readonly Regex AllTagsEx = new Regex(@"<AllTags\s* />", Options);
+
+        static readonly Regex BaseUrlTagEx = new Regex("<BaseUrl/>", Options);
 
 
         public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator, DocumentParser documentParser)
@@ -51,6 +53,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 fileContent = MutateCommentText(fileContent, relativePath, editBaseUrl);
                 fileContent = MutateCategoryTags(fileContent, baseUrl);
                 fileContent = MutateAllTagsLine(fileContent, tags, baseUrl);
+                fileContent = MutateBaseUrlTag(fileContent, baseUrl);
 
                 var title = documentParser.ParsePageTitle(fileContent);
                 filesystemRepository.WriteFile(Path.Combine(rootFilePath.WritePath, relativePath), fileContent, title);
@@ -100,6 +103,11 @@ Do you have something to elaborate.. press the edit button!! :-)**
         }
 
 
+        string MutateBaseUrlTag(string fileContent, string baseUrl)
+        {
+            var content = BaseUrlTagEx.Replace(fileContent, x => baseUrl);
+            return content;
+        }
 
 
 
