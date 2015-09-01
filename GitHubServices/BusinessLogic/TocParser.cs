@@ -76,10 +76,11 @@ namespace GitHubServices.Models
             return parsedToc.ToList();
         }
 
-        string Markdowned(TocEntry entry)
+        string MarkdownedGithub(TocEntry entry)
         {
             string space = entry.Level == "" ? "" : entry.Level.Replace("#", "  ").Substring(1);
             var link = "#" + entry.Title
+                .Trim()
                 .Replace(".", "")
                 .Replace(",", "")
                 .Replace(":", "")
@@ -87,23 +88,30 @@ namespace GitHubServices.Models
                 .Replace("/", "")
                 .Replace("\"", "")
                 .Replace("`", "")
-                .Replace("(","")
-                .Replace(")","")
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace(" ", "-")
+                .ToLowerInvariant();
 
-                // for markdowndeep start
-                .Replace("0", "")
-                .Replace("1", "")
-                .Replace("2", "")
-                .Replace("3", "")
-                .Replace("4", "")
-                .Replace("5", "")
-                .Replace("6", "")
-                .Replace("7", "")
-                .Replace("8", "")
-                .Replace("9", "")
+            return string.Format("{0}* [{1}]({2})", space, entry.Title, link);
+        }
+
+        // for markdowndeep
+        string Markdowned(TocEntry entry)
+        {
+            Regex stuffRemover = new Regex("(`[^`]*`)|(\\d+)");
+            string space = entry.Level == "" ? "" : entry.Level.Replace("#", "  ").Substring(1);
+            var link = "#" + stuffRemover.Replace(entry.Title, x=>"")
                 .Trim()
-                // for markdowndeep end
-
+                .Replace(".", "")
+                .Replace(",", "")
+                .Replace(":", "")
+                .Replace("!", "")
+                .Replace("/", "")
+                .Replace("\"", "")
+                .Replace("`", "")
+                .Replace("(", "")
+                .Replace(")", "")
                 .Replace(" ", "-")
                 .ToLowerInvariant();
 
