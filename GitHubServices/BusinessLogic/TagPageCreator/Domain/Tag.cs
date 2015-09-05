@@ -31,13 +31,14 @@ namespace GitHubServices.BusinessLogic.TagPageCreator.Domain
         const int hex_ffffff = 16777215;
 
         public readonly string Value;
+        public readonly string DisplayText;
 
         public readonly string HexCodeForValue;
 
         public Tag(string value)
         {
             Value = value;
-
+            DisplayText = Value.Replace('_', ' ');
             var hashCode = Math.Abs(value.GetHashCode());
             var color = hashCode % hex_ffffff;
             HexCodeForValue = color.ToString("x").PadRight(6, '0');

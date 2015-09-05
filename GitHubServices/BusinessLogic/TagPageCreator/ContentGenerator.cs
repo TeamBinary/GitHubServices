@@ -69,7 +69,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             return sb.ToString();
         }
 
-        public string CreateCategoryLink(Tag tag, string baseUrl)
+        public string CreateCategoryLinkWithShields(Tag tag, string baseUrl)
         {
             return
                 string.Format(
@@ -79,7 +79,23 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                     baseUrl);
 
         }
-        static char FirstChar(Tag s)
+
+        public string CreateCategoryLink(Tag tag, string baseUrl)
+        {
+            string style = $@"
+    color: #ffffff;
+    margin: 1px 1px 1px 1px;
+    padding: 2px 8px;
+    background-color: #{tag.HexCodeForValue};
+    display: inline-block;
+    font-size: 12px;
+    border-radius: 4px;";
+            string url = $"{baseUrl}CodeQualityAndReadability/Tags/{tag.Value}.html";
+
+            return $"<a href=\"{url}\" style=\"{style}\">{tag.DisplayText}</a>";
+        } 
+
+        char FirstChar(Tag s)
         {
             return s.Value.Substring(0, 1).ToUpper()[0];
         }
@@ -119,5 +135,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             sb.AppendLine();
             sb.AppendLine();
         }
+
     }
 }

@@ -126,7 +126,7 @@ Do you have something to elaborate.. press the edit button!! :-)**
                             sb.Append(Environment.NewLine);
                         }
 
-                        return string.Format(@"{0}",sb.ToString());
+                        return sb.ToString();
                     });
 
             return content;
