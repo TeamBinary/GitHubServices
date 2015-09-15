@@ -6,18 +6,6 @@ using MarkdownDeep;
 
 namespace GitHubServices.BusinessLogic.TagPageCreator
 {
-
-    public interface IFilesystemRepository
-    {
-        void EmptyTagDirectory(string tagDir);
-
-        void WriteFile(string filepath, string content, string pageTitle);
-
-        string ReadFile(string filepath);
-
-        void Copy(string sourcepath, string destinationPath);
-    }
-
     public class FilesystemRepository : IFilesystemRepository
     {
         public void EmptyTagDirectory(string tagDir)
@@ -151,7 +139,8 @@ Read the [Introduction]({baseUrl}) or browse the rest [of the site]({baseUrl}All
 
 <script src=""https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js""></script>
 <link href=""http://firstclassthoughts.co.uk/atelier-forest-light.css"" type =""text/css"" rel=""stylesheet"" />
-<link href=""{baseUrl}github-markdown.css"" type =""text/css"" rel=""stylesheet"">
+
+<link href=""{baseUrl}github-markdown.css"" type =""text/css"" rel=""stylesheet"">
 <link rel='shortcut icon' type='image/x-icon' href='{baseUrl}favicon.ico'/>
 <style>
       .markdown-body {{
