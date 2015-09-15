@@ -93,7 +93,7 @@ namespace GitHubServices.Models
                 .Replace(" ", "-")
                 .ToLowerInvariant();
 
-            return string.Format("{0}* [{1}]({2})", space, entry.Title, link);
+            return $"{space}* [{entry.Title}]({link})";
         }
 
         // for markdowndeep
@@ -103,6 +103,7 @@ namespace GitHubServices.Models
             string space = entry.Level == "" ? "" : entry.Level.Replace("#", "  ").Substring(1);
             var link = "#" + stuffRemover.Replace(entry.Title, x=> "")
                 .Replace(".", "")
+                .Replace("'", "")
                 .Replace(",", "")
                 .Replace(":", "")
                 .Replace("!", "")
@@ -115,7 +116,7 @@ namespace GitHubServices.Models
                 .Replace(" ", "-")
                 .ToLowerInvariant();
 
-            return string.Format("{0}* [{1}]({2})", space, entry.Title, link);
+            return $"{space}* [{entry.Title}]({link})";
         }
     }
 
