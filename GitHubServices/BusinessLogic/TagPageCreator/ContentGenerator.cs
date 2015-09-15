@@ -82,15 +82,8 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         public string CreateCategoryLink(Tag tag, string baseUrl)
         {
-            string style = $@"
-    color: #ffffff;
-    margin: 1px 1px 1px 1px;
-    padding: 2px 8px;
-    background-color: #{tag.HexCodeForValue};
-    display: inline-block;
-    font-size: 12px;
-    border-radius: 4px;";
-            string url = $"{baseUrl}CodeQualityAndReadability/Tags/{tag.Value}.html";
+            string style = $@"color: #ffffff; font-size: 12px; margin: 1px 1px 1px 1px; padding: 2px 8px; border-radius: 4px; background-color: #{tag.HexCodeForValue};    display: inline-block;";
+            string url = $"{baseUrl}Tags/{tag.Value}.html";
 
             return $"<a href=\"{url}\" style=\"{style}\">{tag.DisplayText}</a>";
         } 

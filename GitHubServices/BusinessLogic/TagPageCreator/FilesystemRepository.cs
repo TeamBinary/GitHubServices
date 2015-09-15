@@ -128,11 +128,11 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
             public string MarkdownToHtml(string markdownContent, string pageTitle, string baseUrl)
             {
-                string footer = String.Format(@"<br>
+                string footer = $@"<br>
 <br>
-Read the [Introduction]({0}) or browse the rest [of the site]({0}AllArticles.html)
+Read the [Introduction]({baseUrl}) or browse the rest [of the site]({baseUrl}AllArticles.html)
 <br>
-", baseUrl);
+";
                 string html = md.Transform(markdownContent + footer);
                 string googleAnalytics = @"
 <script>
@@ -145,12 +145,14 @@ Read the [Introduction]({0}) or browse the rest [of the site]({0}AllArticles.htm
   ga('send', 'pageview');
 </script>
 ";
-                string htmlWithCss = string.Format(@"<html>
+                var htmlWithCss = $@"<html>
 <head>
-<title>{0}</title>
+<title>{pageTitle}</title>
+
 <script src=""https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js""></script>
-<link rel=""stylesheet"" href=""{3}github-markdown.css"">
-<link rel='shortcut icon' type='image/x-icon' href='{3}favicon.ico' />
+<link href=""http://firstclassthoughts.co.uk/atelier-forest-light.css"" type =""text/css"" rel=""stylesheet"" />
+<link href=""{baseUrl}github-markdown.css"" type =""text/css"" rel=""stylesheet"">
+<link rel='shortcut icon' type='image/x-icon' href='{baseUrl}favicon.ico'/>
 <style>
       .markdown-body {{
                 min-width: 200px;
@@ -160,18 +162,18 @@ Read the [Introduction]({0}) or browse the rest [of the site]({0}AllArticles.htm
             }}
 </style>
 
-{1}
+{googleAnalytics}
 
 </head>
-<body>
+<body onload=""prettyPrint()"">
 <article class=""markdown-body"">
 
-{2}
+{html}
 
 
 </article>
 </body>
-</html>", pageTitle, googleAnalytics, html, baseUrl);
+</html>";
 
                 return htmlWithCss;
             }

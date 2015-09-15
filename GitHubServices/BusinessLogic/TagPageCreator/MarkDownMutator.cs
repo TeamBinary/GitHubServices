@@ -97,7 +97,8 @@ Do you have something to elaborate.. press the edit button!! :-)**
             var content = CommentTextEx.Replace(
                 fileContent,
                 x =>
-                textBody + disqusStuff);
+                textBody + disqusStuff
+                );
 
             return content;
         }
