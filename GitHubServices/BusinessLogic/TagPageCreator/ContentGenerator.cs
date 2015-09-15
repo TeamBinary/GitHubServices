@@ -19,7 +19,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             var sb = new StringBuilder();
             AddHeader(sb, baseUrl);
 
-            sb.AppendFormat("## All articles on the site");
+            sb.Append($"## All {pages.Distinct().Count()} articles on the site");
             sb.AppendLine();
             sb.AppendLine();
             foreach (var group in groups)

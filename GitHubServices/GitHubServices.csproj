@@ -20,6 +20,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -136,8 +137,10 @@
     <Compile Include="BusinessLogic\TagPageCreator\Domain\StringDomainObject.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\Domain\Tag.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\FilesystemRepository.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\IFilesystemRepository.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\MarkDownMutator.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\SiteGenerator.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\TagCollection.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\TocController.cs" />
     <Compile Include="Global.asax.cs">

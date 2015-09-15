@@ -54,7 +54,8 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 fileContent = MutateCategoryTags(fileContent, baseUrl);
                 fileContent = MutateAllTagsLine(fileContent, tags, baseUrl);
                 fileContent = MutateBaseUrlTag(fileContent, baseUrl);
-
+                var articleCount = tags.SelectMany(x => x.Value).Distinct().Count();
+                fileContent = MutateTagArticleCount(fileContent, articleCount);
                 var title = documentParser.ParsePageTitle(fileContent);
                 filesystemRepository.WriteFile(Path.Combine(rootFilePath.WritePath, relativePath), fileContent, title);
             }
@@ -133,6 +134,7 @@ Do you have something to elaborate.. press the edit button!! :-)**
             return content;
         }
 
+
         string MutateSocialLinks(string fileContent, string baseUrl, string relativePath)
         {
             var url = string.Format("{0}{1}.html", baseUrl, relativePath.Substring(0, relativePath.Length-3));
@@ -155,6 +157,13 @@ Do you have something to elaborate.. press the edit button!! :-)**
 
 
             return content;
+        }
+
+        public static readonly Regex ArticleCountEx = new Regex(@"<ArticleCount/>", Options);
+
+        string MutateTagArticleCount(string fileContent, int numberOfPages)
+        {
+            return ArticleCountEx.Replace(fileContent, numberOfPages.ToString());
         }
     }
 }
