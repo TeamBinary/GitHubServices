@@ -98,7 +98,7 @@ Do you have something to elaborate.. press the edit button!! :-)**
             var content = CommentTextEx.Replace(
                 fileContent,
                 x =>
-                textBody + disqusStuff
+                textBody + "<br><br>" + contentGenerator.Newsletter + disqusStuff
                 );
 
             return content;

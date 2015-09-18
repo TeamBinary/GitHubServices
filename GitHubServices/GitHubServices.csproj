@@ -137,6 +137,7 @@
     <Compile Include="BusinessLogic\TagPageCreator\Domain\StringDomainObject.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\Domain\Tag.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\FilesystemRepository.cs" />
+    <Compile Include="BusinessLogic\TagPageCreator\HtmlWriter.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\IFilesystemRepository.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\MarkDownMutator.cs" />
     <Compile Include="BusinessLogic\TagPageCreator\SiteGenerator.cs" />

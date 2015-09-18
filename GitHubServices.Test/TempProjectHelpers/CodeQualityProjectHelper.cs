@@ -43,9 +43,10 @@ namespace GitHubServices.Test.BusinessLogic
         [Test]
         public void DeleteThisWhenTheServiceIsRunning_generatePages()
         {
-            var filesystemRepository = new HtmlWriter(baseUrl);
-
             var contentGenerator = new ContentGenerator();
+
+            var filesystemRepository = new HtmlWriter(baseUrl, contentGenerator);
+
             var documentParser = new DocumentParser(filesystemRepository);
 
             var siteGenerator = new SiteGenerator(
