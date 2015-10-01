@@ -29,6 +29,8 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         static readonly Regex BaseUrlTagEx = new Regex("<BaseUrl/>", Options);
 
+        static readonly Regex GithubPageUrlEx = new Regex("<GithubPageUrl/>", Options);
+
 
         public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator, DocumentParser documentParser)
         {
@@ -48,12 +50,14 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                     continue;
 
                 var relativePath = path.FullName.Substring(rootFilePath.ReadPath.Length).Replace('\\', '/');
+                string editUrl = editBaseUrl + relativePath;
 
                 fileContent = MutateSocialLinks(fileContent, baseUrl, relativePath);
-                fileContent = MutateCommentText(fileContent, relativePath, editBaseUrl);
+                fileContent = MutateCommentText(fileContent, editUrl);
                 fileContent = MutateCategoryTags(fileContent, baseUrl);
                 fileContent = MutateAllTagsLine(fileContent, tags, baseUrl);
                 fileContent = MutateBaseUrlTag(fileContent, baseUrl);
+                fileContent = MutateGithubPageUrlTag(fileContent, editUrl);
                 var articleCount = tags.SelectMany(x => x.Value).Distinct().Count();
                 fileContent = MutateTagArticleCount(fileContent, articleCount);
                 var title = documentParser.ParsePageTitle(fileContent);
@@ -72,14 +76,13 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             return content;
         }
 
-        string MutateCommentText(string fileContent, string relativeReadPath, string editBaseUrl)
+        string MutateCommentText(string fileContent, string editUrl)
         {
-            string url = editBaseUrl + relativeReadPath;
             var textBody = string.Format(@"**Comments are very welcome! Corrections and other editorial changes are very welcome. <a href=""{0}"">Just go to Github, press the edit button and fire away.</a> 
 Have I left out important information about your favourite language, press the edit button. Are there wordings that definitely are not English, press the edit button. 
 Do you have something to elaborate.. press the edit button!! :-)**
 
-<br>", url);
+<br>", editUrl);
 
             var disqusStuff = @"<div id=""disqus_thread""></div>
 <script type=""text/javascript"">
@@ -108,6 +111,11 @@ Do you have something to elaborate.. press the edit button!! :-)**
         string MutateBaseUrlTag(string fileContent, string baseUrl)
         {
             var content = BaseUrlTagEx.Replace(fileContent, x => baseUrl);
+            return content;
+        }
+        string MutateGithubPageUrlTag(string fileContent, string editUrl)
+        {
+            var content = GithubPageUrlEx.Replace(fileContent, x => editUrl);
             return content;
         }
 
