@@ -17,8 +17,8 @@ namespace GitHubServices.Test.BusinessLogic
     [TestFixture]
     class CodeQualityProjectHelper
     {
-        readonly string readPath = @"C:\Users\kbg\Documents\GitHub\CodeQualityAndReadability\";
-        readonly string writePath = @"C:\Users\kbg\Documents\GitHub\CodeQualityAndReadability-gh-pages\";
+        readonly string readPath = @"C:\src\CodeQualityAndReadability\";
+        readonly string writePath = @"C:\src\CodeQualityAndReadability-gh-pages\";
 
         readonly string baseUrl = @"http://firstclassthoughts.co.uk/";
 
