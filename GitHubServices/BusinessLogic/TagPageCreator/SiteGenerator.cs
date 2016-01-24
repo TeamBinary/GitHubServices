@@ -50,10 +50,11 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             string ext = path.Extension.ToLower();
             var isImage = ext == ".png" || ext == ".jpeg" || ext == ".gif" || ext == ".jpg" || ext == ".ico";
+	        var isVideo = ext == ".mp4";
             var html = ext == ".css" || ext == ".js";
             var isRelevant = html || path.FullName.EndsWith("CNAME");
 
-            return isImage || isRelevant;
+            return isImage || isVideo|| isRelevant;
         }
 
 
