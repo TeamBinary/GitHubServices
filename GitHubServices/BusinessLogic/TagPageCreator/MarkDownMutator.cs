@@ -78,10 +78,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         string MutateCommentText(string fileContent, string editUrl)
         {
-            var textBody = string.Format(@"**Comments are very welcome! Corrections and other editorial changes are very welcome. <a href=""{0}"">Just go to Github, press the edit button and fire away.</a> 
-Have I left out important information about your favourite language, press the edit button. Are there wordings that definitely are not English, press the edit button. 
-Do you have something to elaborate.. press the edit button!! :-)**
-
+            var textBody = string.Format(@"**Congratulations! You've come all the way to the bottom of the article! Please help me make this site better for everyone by making editorial changes. Fix spelling mistakes, weird sentences, or correct what is plain wrong. Don't feel shy.** <a href=""{0}"">Just go to Github, press the edit button and fire away.</a>
 <br>", editUrl);
 
             var disqusStuff = @"<div id=""disqus_thread""></div>
