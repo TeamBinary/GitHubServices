@@ -42,9 +42,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         static readonly Regex headerEx = new Regex("^# (?<title>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
 
-        public static readonly Regex CategoryEx = new Regex(
-    @"<Categories Tags=""(?<tags>[^""]*)"">[^<]+</Categories>",
-    Options);
+        public static readonly Regex CategoryEx = new Regex(@"<Categories Tags=""(?<tags>[^""]*)"">[^<]+</Categories>", Options);
 
         public string ParsePageTitle(string pageContent)
         {
