@@ -15,6 +15,8 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         readonly ContentGenerator contentGenerator;
         readonly DocumentParser documentParser;
 
+        const string Draft = "draft";
+
         static readonly RegexOptions Options = RegexOptions.Compiled | RegexOptions.Singleline;
 
         static readonly Regex SocialButtonShareEx = new Regex(
@@ -26,11 +28,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             Options);
 
         static readonly Regex AllTagsEx = new Regex(@"<AllTags\s* />", Options);
-
         static readonly Regex BaseUrlTagEx = new Regex("<BaseUrl/>", Options);
-
         static readonly Regex GithubPageUrlEx = new Regex("<GithubPageUrl/>", Options);
-
+        static readonly Regex TopXLatestArticledEx = new Regex("<Top4LatestArticles/>", Options);
 
         public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator, DocumentParser documentParser)
         {
@@ -42,16 +42,28 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         public void Mutate(ReadWritePaths rootFilePath, TagCollection tags, string baseUrl, string editBaseUrl)
         {
             var di = new DirectoryInfo(rootFilePath.ReadPath);
-            foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
+
+            var files = di.EnumerateFiles("*.md", SearchOption.AllDirectories).ToList();
+            var top4files = files
+                .Where(x => x.FullName.StartsWith(Path.Combine(rootFilePath.ReadPath, "Articles")))
+                .OrderByDescending(x => x.LastWriteTime)
+                .Select(x => new { File = x, Content = File.ReadAllText(x.FullName)})
+                .Where(x => !x.Content.StartsWith(Draft))
+                .Take(4)
+                .Select(x => Tuple.Create(x.File, x.File.FullName.Substring(rootFilePath.ReadPath.Length), x.Content))
+                .ToList();
+
+            foreach (var path in files)
             {
                 var fileContent = filesystemRepository.ReadFile(path.FullName);
 
-                if (fileContent.StartsWith("draft"))
+                if (fileContent.StartsWith(Draft))
                     continue;
 
                 var relativePath = path.FullName.Substring(rootFilePath.ReadPath.Length).Replace('\\', '/');
                 string editUrl = editBaseUrl + relativePath;
 
+                fileContent = MutateTopXArticles(fileContent, top4files, baseUrl);
                 fileContent = MutateSocialLinks(fileContent, baseUrl, relativePath);
                 fileContent = MutateCommentText(fileContent, editUrl);
                 fileContent = MutateCategoryTags(fileContent, baseUrl);
@@ -110,13 +122,32 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             var content = BaseUrlTagEx.Replace(fileContent, x => baseUrl);
             return content;
         }
+
+        bool IsLessThan30DaysOld(DateTime t)
+        {
+            return t > DateTime.Now.AddDays(-30);
+        }
+
+        string MutateTopXArticles(string fileContent, List<Tuple<FileInfo, string, string>> files, string baseUrl)
+        {
+            var toplist = files
+                .Select(x => new
+                {
+                    Content = x.Item3,
+                    Path = (baseUrl+x.Item2).Replace('\\','/'),
+                    NewSign = IsLessThan30DaysOld(x.Item1.CreationTime) ? @"<img src=""img/new.gif"">" : ""
+                })
+                .Select(x =>$"* [{documentParser.ParsePageTitle(x.Content)}]({x.Path}) {x.NewSign}");
+
+            var content = TopXLatestArticledEx.Replace(fileContent, x => string.Join("\n", toplist));
+            return content;
+        }
+
         string MutateGithubPageUrlTag(string fileContent, string editUrl)
         {
             var content = GithubPageUrlEx.Replace(fileContent, x => editUrl);
             return content;
         }
-
-
 
         string MutateCategoryTags(string fileContent, string baseUrl)
         {

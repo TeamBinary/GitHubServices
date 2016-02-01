@@ -78,6 +78,5 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 .ToArray();
             return parsedTags;
         }
-
     }
 }
