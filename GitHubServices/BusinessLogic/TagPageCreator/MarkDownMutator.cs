@@ -50,7 +50,10 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 .Select(x => new { File = x, Content = File.ReadAllText(x.FullName)})
                 .Where(x => !x.Content.StartsWith(Draft))
                 .Take(4)
-                .Select(x => Tuple.Create(x.File, x.File.FullName.Substring(rootFilePath.ReadPath.Length), x.Content))
+                .Select(x => Tuple.Create(
+					x.File, 
+					x.File.FullName.Substring(rootFilePath.ReadPath.Length,x.File.FullName.Length-rootFilePath.ReadPath.Length-2)+"html", 
+					x.Content))
                 .ToList();
 
             foreach (var path in files)
@@ -134,7 +137,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 .Select(x => new
                 {
                     Content = x.Item3,
-                    Path = (baseUrl+x.Item2).Replace('\\','/'),
+                    Path = (x.Item2).Replace('\\','/'),
                     NewSign = IsLessThan30DaysOld(x.Item1.CreationTime) ? @"<img src=""img/new.gif"">" : ""
                 })
                 .Select(x =>$"* [{documentParser.ParsePageTitle(x.Content)}]({x.Path}) {x.NewSign}");
