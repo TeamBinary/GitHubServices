@@ -99,7 +99,7 @@ namespace GitHubServices.Models
         // for markdowndeep
         string Markdowned(TocEntry entry)
         {
-            Regex stuffRemover = new Regex("(`[^`]*`)|(\\d+)");
+            Regex stuffRemover = new Regex("(`[^`]+`)|(^\\d+([.]\\d*)*)", RegexOptions.Multiline);
             string space = entry.Level == "" ? "" : entry.Level.Replace("#", "  ").Substring(1);
             var link = "#" + stuffRemover.Replace(entry.Title, x=> "")
                 .Replace(".", "")
