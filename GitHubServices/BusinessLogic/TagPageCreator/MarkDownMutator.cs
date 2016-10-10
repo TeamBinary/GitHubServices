@@ -31,8 +31,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         static readonly Regex BaseUrlTagEx = new Regex("<BaseUrl/>", Options);
         static readonly Regex GithubPageUrlEx = new Regex("<GithubPageUrl/>", Options);
         static readonly Regex TopXLatestArticledEx = new Regex("<Top4LatestArticles/>", Options);
+		static readonly Regex ArticleHeaderUrlsEx = new Regex("<ArticleHeaderUrls/>", Options);
 
-        public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator, DocumentParser documentParser)
+		public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator, DocumentParser documentParser)
         {
             this.filesystemRepository = filesystemRepository;
             this.contentGenerator = contentGenerator;
@@ -67,8 +68,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 string editUrl = editBaseUrl + relativePath;
 
                 fileContent = MutateTopXArticles(fileContent, top4files, baseUrl);
+                fileContent = MutateArticleHeaderUrlsTag(fileContent);
                 fileContent = MutateSocialLinks(fileContent, baseUrl, relativePath);
-                fileContent = MutateCommentText(fileContent, editUrl);
+				fileContent = MutateCommentText(fileContent, editUrl);
                 fileContent = MutateCategoryTags(fileContent, baseUrl);
                 fileContent = MutateAllTagsLine(fileContent, tags, baseUrl);
                 fileContent = MutateBaseUrlTag(fileContent, baseUrl);
@@ -93,7 +95,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         string MutateCommentText(string fileContent, string editUrl)
         {
-            var textBody = string.Format(@"**Congratulations! You've come all the way to the bottom of the article! Please help me make this site better for everyone by making editorial changes. Fix spelling mistakes, weird sentences, or correct what is plain wrong. Don't feel shy.** <a href=""{0}"">Just go to Github, press the edit button and fire away.</a>
+            var textBody = string.Format(@"**Congratulations! You've come all the way to the bottom of the article! Please help me make this site better for everyone by commenting below. Or how about making editorial changes? Feel free to fix spelling mistakes, weird sentences, or correct what is plain wrong. All the material is on GitHub so don't be shy.** <a href=""{0}"">Just go to Github, press the edit button and fire away.</a>
 <br>", editUrl);
 
             var disqusStuff = @"<div id=""disqus_thread""></div>
@@ -120,13 +122,19 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         }
 
 
-        string MutateBaseUrlTag(string fileContent, string baseUrl)
-        {
-            var content = BaseUrlTagEx.Replace(fileContent, x => baseUrl);
-            return content;
-        }
+		string MutateBaseUrlTag(string fileContent, string baseUrl)
+		{
+			var content = BaseUrlTagEx.Replace(fileContent, x => baseUrl);
+			return content;
+		}
 
-        bool IsLessThan30DaysOld(DateTime t)
+		string MutateArticleHeaderUrlsTag(string fileContent)
+		{
+			var content = ArticleHeaderUrlsEx.Replace(fileContent, x => @"<br>[[Introduction]](<BaseUrl/>) [[All categories]](<BaseUrl/>AllTags.html) [[All articles]](<BaseUrl/>AllArticles.html) [[Edit article <img src=""http://firstclassthoughts.co.uk/img/edit.png""> ]](<GithubPageUrl/>)<br>");
+			return content;
+		}
+
+		bool IsLessThan30DaysOld(DateTime t)
         {
             return t > DateTime.Now.AddDays(-30);
         }
@@ -154,7 +162,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         string MutateCategoryTags(string fileContent, string baseUrl)
         {
-
             var content = DocumentParser.CategoryEx.Replace(
                 fileContent,
                 x =>
@@ -193,7 +200,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 [![Feedly this]({0}feedly.png)](http://cloud.feedly.com/#subscription%2Ffeed%2F{1})
 [![Ycombinator this]({0}ycombinator.png)](http://news.ycombinator.com/submitlink?u={1}&t={2})
 ", baseUrl+"img/", url, title));
-
 
             return content;
         }
