@@ -376,6 +376,7 @@ Kasper B. Graversen";
             var actual = sut.MakeToc(content);
 
             var expected = @"Table of Content
+
  * [2. Configuration](#2-configuration)
    * [2.1 Stacked configuration principle](#21-stacked-configuration-principle)
    * [2.2 Simple changes](#22-simple-changes)
