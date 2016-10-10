@@ -14,12 +14,11 @@ namespace GitHubServices.Test.BusinessLogic
     /// <summary>
     /// run these to update the TOC's of the code quality project
     /// </summary>
-    [Explicit]
     [TestFixture]
-    class CodeQualityProjectHelper
+    public class CodeQualityProjectHelper
     {
-        readonly string readPath = @"C:\src\CodeQualityAndReadability\";
-        readonly string writePath = @"C:\src\CodeQualityAndReadability-gh-pages\";
+        const string readPath = @"C:\src\CodeQualityAndReadability\";
+        const string writePath = readPath+"docs";
 
         readonly string baseUrl = @"http://firstclassthoughts.co.uk/";
 

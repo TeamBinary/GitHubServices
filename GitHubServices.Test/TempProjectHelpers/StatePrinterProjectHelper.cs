@@ -14,9 +14,9 @@ namespace GitHubServices.Test.BusinessLogic
     /// <summary>
     /// run these to update the TOC's of the stateprinter project
     /// </summary>
-    [Explicit]
+    //[Explicit]
     [TestFixture]
-    class StatePrinterProjectHelper
+    public class StatePrinterProjectHelper
     {
         [Test]
         public void DeleteThisWhenTheServiceIsRunning()
