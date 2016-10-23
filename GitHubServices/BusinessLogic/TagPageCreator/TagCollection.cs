@@ -10,21 +10,25 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
     {
         readonly Dictionary<Tag, List<Page>> Tags = new Dictionary<Tag, List<Page>>();
         readonly Dictionary<string, Tag> lowerCaseDistinct = new Dictionary<string, Tag>();
-		private IEnumerable<Tuple<Tag, Page[]>> tags;
+        private IEnumerable<Tuple<Tag, Page[]>> tags;
 
-		public TagCollection()
-	    {
-	    }
+        public TagCollection(IEnumerable<Tuple<Tag, Page[]>> tags)
+        {
+            foreach (var tagInfo in tags)
+            {
+                Add(tagInfo.Item1, tagInfo.Item2);
+            }
+        }
 
-		public TagCollection(IEnumerable<Tuple<Tag, Page[]>> tags)
-		{
-			foreach (var tagInfo in tags)
-			{
-				Add(tagInfo.Item1, tagInfo.Item2);
-			}
-		}
+        public TagCollection(IEnumerable<TagCollection> tagCollections)
+        {
+            foreach (var collection in tagCollections)
+            {
+                Add(collection);
+            }
+        }
 
-		public void Add(Tag tag, params Page[] url)
+        public void Add(Tag tag, params Page[] url)
         {
             Tag distinctTag;
             if (!lowerCaseDistinct.TryGetValue(tag.Value.ToLower(), out distinctTag))

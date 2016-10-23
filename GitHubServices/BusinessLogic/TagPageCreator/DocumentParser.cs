@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,70 +8,66 @@ using GitHubServices.BusinessLogic.TagPageCreator.Domain;
 
 namespace GitHubServices.BusinessLogic.TagPageCreator
 {
-	public class DocumentParser
-	{
-		public TagCollection GetTags(string rootFilePath)
-		{
-			var tags = new TagCollection();
-			var di = new DirectoryInfo(rootFilePath);
-			foreach (var path in di.EnumerateFiles("*.md", SearchOption.AllDirectories))
-			{
-				var relativePath = path.FullName.Substring(rootFilePath.Length);
-				var fileContent = File.ReadAllText(path.FullName, new UTF8Encoding(true));
+    public class DocumentParser
+    {
+        public TagCollection GetTags(string rootFilePath)
+        {
+            var tags = new DirectoryInfo(rootFilePath)
+                .EnumerateFiles("*.md", SearchOption.AllDirectories)
+                .Select(path => new
+                {
+                    relativePath = path.FullName.Substring(rootFilePath.Length),
+                    fileContent = File.ReadAllText(path.FullName, new UTF8Encoding(true)),
+                })
+                .Where(x => !DocumentParserCore.IsDraftFile(x.fileContent))
+                .Select(x => DocumentParserCore.ParsePage(x.fileContent, x.relativePath));
 
-				if (DocumentParserCore.IsDraftFile(fileContent))
-					continue;
+            return new TagCollection(tags);
+        }
+    }
 
-				var tagsForPage = DocumentParserCore.ParsePage(fileContent, relativePath);
-				tags.Add(tagsForPage);
-			}
+    static class DocumentParserCore
+    {
+        static readonly RegexOptions Options = RegexOptions.Compiled | RegexOptions.Singleline;
 
-			return tags;
-		}
-	}
+        public static readonly Regex CategoryEx = new Regex(@"<Categories Tags=""(?<tags>[^""]*)"">[^<]+</Categories>", Options);
+        static readonly Regex headerEx = new Regex("^# (?<title>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
 
-	static class DocumentParserCore
-	{
-		static readonly RegexOptions Options = RegexOptions.Compiled | RegexOptions.Singleline;
+        public static string ParsePageTitle(string pageContent)
+        {
+            Match headerMatch = headerEx.Match(pageContent);
+            var title = headerMatch.Groups["title"].Value.Trim();
 
-		public static readonly Regex CategoryEx = new Regex(@"<Categories Tags=""(?<tags>[^""]*)"">[^<]+</Categories>", Options);
-		static readonly Regex headerEx = new Regex("^# (?<title>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
+            return title;
+        }
 
-		public static string ParsePageTitle(string pageContent)
-		{
-			Match headerMatch = headerEx.Match(pageContent);
-			var title = headerMatch.Groups["title"].Value.Trim();
+        static Tag[] GetTagsFromContent(string content)
+        {
+            return GetTheTags(CategoryEx.Match(content).Groups["tags"].Value);
+        }
 
-			return title;
-		}
+        public static Tag[] GetTheTags(string tagsArgument)
+        {
+            Tag[] parsedTags = tagsArgument
+                .Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries)
+                .Select(y => new Tag(y.Trim()))
+                .ToArray();
+            return parsedTags;
+        }
 
-		static Tag[] GetTagsFromContent(string content)
-		{
-			return GetTheTags(CategoryEx.Match(content).Groups["tags"].Value);
-		}
+        internal static TagCollection ParsePage(string pageContent, string fullName)
+        {
+            var title = ParsePageTitle(pageContent);
 
-		public static Tag[] GetTheTags(string tagsArgument)
-		{
-			Tag[] parsedTags = tagsArgument
-				.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries)
-				.Select(y => new Tag(y.Trim()))
-				.ToArray();
-			return parsedTags;
-		}
+            var tags = GetTagsFromContent(pageContent)
+                .Select(x => Tuple.Create(x, new[] {new Page(title, fullName)}));
 
-		internal static TagCollection ParsePage(string pageContent, string fullName)
-		{
-			var title = ParsePageTitle(pageContent);
+            return new TagCollection(tags);
+        }
 
-			var tags = GetTagsFromContent(pageContent)
-				.Select(x => Tuple.Create(x, new[] {new Page(title, fullName)}));
-
-			return new TagCollection(tags);
-		}
-
-		public static bool IsDraftFile(string fileContent)
-		{
-			return fileContent.StartsWith("draft");
-		}
-	}
+        public static bool IsDraftFile(string fileContent)
+        {
+            return fileContent.StartsWith("draft");
+        }
+    }
 }
