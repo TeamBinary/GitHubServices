@@ -13,7 +13,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
     {
         readonly IFilesystemRepository filesystemRepository;
         readonly ContentGenerator contentGenerator;
-        readonly DocumentParser documentParser;
 
         const string Draft = "draft";
 
@@ -33,11 +32,10 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         static readonly Regex TopXLatestArticledEx = new Regex("<Top4LatestArticles/>", Options);
 		static readonly Regex ArticleHeaderUrlsEx = new Regex("<ArticleHeaderUrls/>", Options);
 
-		public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator, DocumentParser documentParser)
+		public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator)
         {
             this.filesystemRepository = filesystemRepository;
             this.contentGenerator = contentGenerator;
-            this.documentParser = documentParser;
         }
 
         public void Mutate(ReadWritePaths rootFilePath, TagCollection tags, string baseUrl, string editBaseUrl)
@@ -77,7 +75,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 fileContent = MutateGithubPageUrlTag(fileContent, editUrl);
                 var articleCount = tags.SelectMany(x => x.Value).Distinct().Count();
                 fileContent = MutateTagArticleCount(fileContent, articleCount);
-                var title = documentParser.ParsePageTitle(fileContent);
+                var title = DocumentParserCore.ParsePageTitle(fileContent);
                 filesystemRepository.WriteFile(Path.Combine(rootFilePath.WritePath, relativePath), fileContent, title);
             }
         }
@@ -148,7 +146,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                     Path = (x.Item2).Replace('\\','/'),
                     NewSign = IsLessThan30DaysOld(x.Item1.CreationTime) ? @"<img src=""img/new.gif"">" : ""
                 })
-                .Select(x =>$"* [{documentParser.ParsePageTitle(x.Content)}]({x.Path}) {x.NewSign}");
+                .Select(x =>$"* [{DocumentParserCore.ParsePageTitle(x.Content)}]({x.Path}) {x.NewSign}");
 
             var content = TopXLatestArticledEx.Replace(fileContent, x => string.Join("\n", toplist));
             return content;
@@ -162,11 +160,11 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         string MutateCategoryTags(string fileContent, string baseUrl)
         {
-            var content = DocumentParser.CategoryEx.Replace(
+            var content = DocumentParserCore.CategoryEx.Replace(
                 fileContent,
                 x =>
                     {
-                        Tag[] parsedTags = documentParser.GetTheTags(x.Groups["tags"].Value);
+                        Tag[] parsedTags = DocumentParserCore.GetTheTags(x.Groups["tags"].Value);
                         var sb = new StringBuilder();
                         foreach (var tag in parsedTags)
                         {

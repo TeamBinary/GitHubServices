@@ -47,58 +47,58 @@ namespace GitHubServices.Test.BusinessLogic
 
             var filesystemRepository = new HtmlWriter(baseUrl, contentGenerator);
 
-            var documentParser = new DocumentParser(filesystemRepository);
+            var documentParser = new DocumentParser();
 
             var siteGenerator = new SiteGenerator(
                 contentGenerator,
                 filesystemRepository,
                 documentParser,
-                new MarkDownMutator(filesystemRepository, contentGenerator, documentParser));
+                new MarkDownMutator(filesystemRepository, contentGenerator));
             
             siteGenerator.GenerateSite(new ReadWritePaths(readPath, writePath), baseUrl, editBaseUrl);
         }
 
-        [Explicit]
-        [Test]
-        public void TagCollector_GetTags()
-        {
-            DocumentParser co = new DocumentParser(new FilesystemRepository());
-            var tags = co.GetTags(readPath);
-            string exp = @"new TagsCollection()
-{
-    Pages[""Design""] = new List<Page>()
-    Pages[0] = new Page(), ref: 0
-    {
-        Name = ""Malleable code through using decorators
-""
-        FilePath = ""Articles\Design\MalleableCodeUsingDecorators.md""
-    }
-    Pages[""SOLID""] = new List<Page>()
-    Pages[0] =  -> 0
-    Pages[1] = new Page(), ref: 1
-    {
-        Name = ""Book review: Adaptive Code via C#
-""
-        FilePath = ""BookReviews\Adaptive Code via CS.md""
-    }
-    Pages[""Single_Responsibility_Principle""] = new List<Page>()
-    Pages[0] =  -> 0
-    Pages[""Design_Pattern""] = new List<Page>()
-    Pages[0] =  -> 0
-    Pages[""Decorator""] = new List<Page>()
-    Pages[0] =  -> 0
-    Pages[""Wrapper""] = new List<Page>()
-    Pages[0] =  -> 0
-    Pages[""Cache""] = new List<Page>()
-    Pages[0] =  -> 0
-    Pages[""Book_Review""] = new List<Page>()
-    Pages[0] =  -> 1
-}";
+//        [Explicit]
+//        [Test]
+//        public void TagCollector_GetTags()
+//        {
+//            DocumentParser co = new DocumentParser(new FilesystemRepository());
+//            var tags = co.GetTags(readPath);
+//            string exp = @"new TagsCollection()
+//{
+//    Pages[""Design""] = new List<Page>()
+//    Pages[0] = new Page(), ref: 0
+//    {
+//        Name = ""Malleable code through using decorators
+//""
+//        FilePath = ""Articles\Design\MalleableCodeUsingDecorators.md""
+//    }
+//    Pages[""SOLID""] = new List<Page>()
+//    Pages[0] =  -> 0
+//    Pages[1] = new Page(), ref: 1
+//    {
+//        Name = ""Book review: Adaptive Code via C#
+//""
+//        FilePath = ""BookReviews\Adaptive Code via CS.md""
+//    }
+//    Pages[""Single_Responsibility_Principle""] = new List<Page>()
+//    Pages[0] =  -> 0
+//    Pages[""Design_Pattern""] = new List<Page>()
+//    Pages[0] =  -> 0
+//    Pages[""Decorator""] = new List<Page>()
+//    Pages[0] =  -> 0
+//    Pages[""Wrapper""] = new List<Page>()
+//    Pages[0] =  -> 0
+//    Pages[""Cache""] = new List<Page>()
+//    Pages[0] =  -> 0
+//    Pages[""Book_Review""] = new List<Page>()
+//    Pages[0] =  -> 1
+//}";
 
-            var assert = Create.Assert();
-            assert.Configuration.Test.SetAutomaticTestRewrite(x => false);
-            assert.PrintEquals(exp, tags);
-        }
+//            var assert = Create.Assert();
+//            assert.Configuration.Test.SetAutomaticTestRewrite(x => false);
+//            assert.PrintEquals(exp, tags);
+//        }
 
         void MutateTocSection(string path)
         {

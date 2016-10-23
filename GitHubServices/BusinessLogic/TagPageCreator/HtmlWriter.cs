@@ -10,8 +10,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator {
 
         readonly string baseUrl;
 
-
-        public HtmlWriter(string baseUrl, ContentGenerator generator) {
+		public HtmlWriter(string baseUrl, ContentGenerator generator) {
             this.baseUrl = baseUrl;
             transformer = new HtmlTransformer(generator);
         }
