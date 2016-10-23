@@ -45,7 +45,7 @@ namespace GitHubServices.Test.BusinessLogic
         {
             var contentGenerator = new ContentGenerator();
 
-            var filesystemRepository = new HtmlWriter(baseUrl, contentGenerator);
+            var filesystemRepository = new HtmlWriter(baseUrl);
 
             var documentParser = new DocumentParser();
 

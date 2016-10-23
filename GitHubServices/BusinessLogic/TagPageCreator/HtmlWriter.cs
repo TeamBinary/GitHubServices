@@ -10,9 +10,9 @@ namespace GitHubServices.BusinessLogic.TagPageCreator {
 
         readonly string baseUrl;
 
-		public HtmlWriter(string baseUrl, ContentGenerator generator) {
+		public HtmlWriter(string baseUrl) {
             this.baseUrl = baseUrl;
-            transformer = new HtmlTransformer(generator);
+            transformer = new HtmlTransformer();
         }
 
         public void EnsureEmptyTagDirectory(string tagDir)
@@ -55,13 +55,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator {
 
         class HtmlTransformer
         {
-            readonly ContentGenerator generator;
-
-            public HtmlTransformer(ContentGenerator generator)
-            {
-                this.generator = generator;
-            }
-
             readonly Markdown md = new Markdown()
                                    {
                                        ExtraMode = true,
@@ -71,10 +64,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator {
                                            (m, code) => string.Format(
                                                "<pre class=\"prettyprint\"><code>{0}</code></pre>\n",
                                                code),
-
                                    };
-
-      
 
             public string MarkdownToHtml(string markdownContent, string pageTitle, string baseUrl) {
                 string footer = $@"<br>
