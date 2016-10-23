@@ -6,7 +6,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 {
     public class FilesystemRepository : IFilesystemRepository
     {
-        public void EmptyTagDirectory(string tagDir)
+        public void EnsureEmptyTagDirectory(string tagDir)
         {
             if (Directory.Exists(tagDir))
             {

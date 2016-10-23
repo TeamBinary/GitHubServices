@@ -67,7 +67,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         void TagPages(string writePath, TagCollection tags, string baseUrl)
         {
             var tagDir = Path.Combine(writePath, "Tags");
-            filesystemRepository.EmptyTagDirectory(tagDir);
+            filesystemRepository.EnsureEmptyTagDirectory(tagDir);
             
             foreach (KeyValuePair<Tag, List<Page>> tag in tags)
             {

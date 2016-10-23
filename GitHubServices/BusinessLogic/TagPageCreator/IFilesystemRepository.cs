@@ -2,7 +2,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 {
     public interface IFilesystemRepository
     {
-        void EmptyTagDirectory(string tagDir);
+        void EnsureEmptyTagDirectory(string tagDir);
 
         void WriteFile(string filepath, string content, string pageTitle);
 

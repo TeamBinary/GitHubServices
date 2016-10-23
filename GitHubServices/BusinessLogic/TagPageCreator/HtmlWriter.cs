@@ -15,7 +15,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator {
             transformer = new HtmlTransformer(generator);
         }
 
-        public void EmptyTagDirectory(string tagDir)
+        public void EnsureEmptyTagDirectory(string tagDir)
         {
             if (Directory.Exists(tagDir))
             {
