@@ -13,22 +13,32 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 
         public string GenerateAllArticlesPage(List<Page> pages, string baseUrl)
         {
-            var groups = pages.Distinct()
-                .OrderBy(x => x.Path)
-                .ThenBy(x => x.Title)
-                .GroupBy(x=> x.Path);
-
             var sb = new StringBuilder();
-            AddHeader(sb, baseUrl);
+
+			AddHeader(sb, baseUrl);
 
             sb.Append($"## All {pages.Distinct().Count()} articles on the site");
             sb.AppendLine();
             sb.AppendLine();
+
+            var groups = pages.Distinct()
+                .OrderBy(x => x.Path)
+                .ThenBy(x => x.Title)
+                .GroupBy(x => x.Path);
+            AddGroups(groups, sb);
+
+            AddFooter(sb);
+
+			return sb.ToString();
+        }
+
+        private static void AddGroups(IEnumerable<IGrouping<string, Page>> groups, StringBuilder sb)
+        {
             foreach (var group in groups)
             {
-                sb.AppendLine("**" + group.Key + "**");
+                sb.AppendLine("**" + @group.Key + "**");
                 sb.AppendLine("");
-                foreach (var page in group)
+                foreach (var page in @group)
                 {
                     sb.AppendFormat("* [{0}]({1})", page.Title, page.FilePathWithHtmlExtension);
                     sb.AppendLine();
@@ -36,9 +46,6 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
                 sb.AppendLine();
                 sb.AppendLine();
             }
-
-            AddFooter(sb);
-            return sb.ToString();
         }
 
         public string GenerateAllTagsPage(List<Tag> tags, string baseUrl)

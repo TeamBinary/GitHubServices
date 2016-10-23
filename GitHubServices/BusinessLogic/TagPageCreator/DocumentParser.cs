@@ -7,8 +7,6 @@ using GitHubServices.BusinessLogic.TagPageCreator.Domain;
 
 namespace GitHubServices.BusinessLogic.TagPageCreator
 {
-
-
     public class DocumentParser
     {
         readonly IFilesystemRepository filesystemRepository;
