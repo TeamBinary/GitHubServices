@@ -14,25 +14,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         readonly IFilesystemRepository filesystemRepository;
         readonly ContentGenerator contentGenerator;
 
-        const string Draft = "draft";
-
-        static readonly RegexOptions Options = RegexOptions.Compiled | RegexOptions.Singleline;
-
-        static readonly Regex SocialButtonShareEx = new Regex(
-            "<SocialShareButtons>[^<]+</SocialShareButtons>",
-            Options);
-
-        static readonly Regex CommentTextEx = new Regex(
-            "<CommentText>[^<]+</CommentText>",
-            Options);
-
-        static readonly Regex AllTagsEx = new Regex(@"<AllTags\s* />", Options);
-        static readonly Regex BaseUrlTagEx = new Regex("<BaseUrl/>", Options);
-        static readonly Regex GithubPageUrlEx = new Regex("<GithubPageUrl/>", Options);
-        static readonly Regex TopXLatestArticledEx = new Regex("<Top4LatestArticles/>", Options);
-		static readonly Regex ArticleHeaderUrlsEx = new Regex("<ArticleHeaderUrls/>", Options);
-
-		public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator)
+        public MarkDownMutator(IFilesystemRepository filesystemRepository, ContentGenerator contentGenerator)
         {
             this.filesystemRepository = filesystemRepository;
             this.contentGenerator = contentGenerator;
@@ -41,60 +23,131 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         public void Mutate(ReadWritePaths rootFilePath, TagCollection tags, string baseUrl, string editBaseUrl)
         {
             var di = new DirectoryInfo(rootFilePath.ReadPath);
-
             var files = di.EnumerateFiles("*.md", SearchOption.AllDirectories).ToList();
-            var top4files = files
-                .Where(x => x.FullName.StartsWith(Path.Combine(rootFilePath.ReadPath, "Articles")))
-                .OrderByDescending(x => x.LastWriteTime)
-                .Select(x => new { File = x, Content = File.ReadAllText(x.FullName)})
-                .Where(x => !x.Content.StartsWith(Draft))
-                .Take(4)
-                .Select(x => Tuple.Create(
-					x.File, 
-					x.File.FullName.Substring(rootFilePath.ReadPath.Length,x.File.FullName.Length-rootFilePath.ReadPath.Length-2)+"html", 
-					x.Content))
-                .ToList();
 
-            foreach (var path in files)
+            var output = MarkDownMutatorCore.MutateFile(rootFilePath, tags, baseUrl, editBaseUrl, files, contentGenerator);
+
+            foreach (var inf in output)
             {
-                var fileContent = filesystemRepository.ReadFile(path.FullName);
-
-                if (fileContent.StartsWith(Draft))
-                    continue;
-
-                var relativePath = path.FullName.Substring(rootFilePath.ReadPath.Length).Replace('\\', '/');
-                string editUrl = editBaseUrl + relativePath;
-
-                fileContent = MutateTopXArticles(fileContent, top4files, baseUrl);
-                fileContent = MutateArticleHeaderUrlsTag(fileContent);
-                fileContent = MutateSocialLinks(fileContent, baseUrl, relativePath);
-				fileContent = MutateCommentText(fileContent, editUrl);
-                fileContent = MutateCategoryTags(fileContent, baseUrl);
-                fileContent = MutateAllTagsLine(fileContent, tags, baseUrl);
-                fileContent = MutateBaseUrlTag(fileContent, baseUrl);
-                fileContent = MutateGithubPageUrlTag(fileContent, editUrl);
-                var articleCount = tags.SelectMany(x => x.Value).Distinct().Count();
-                fileContent = MutateTagArticleCount(fileContent, articleCount);
-                var title = DocumentParserCore.ParsePageTitle(fileContent);
-                filesystemRepository.WriteFile(Path.Combine(rootFilePath.WritePath, relativePath), fileContent, title);
+                filesystemRepository.WriteFile(inf.Path, inf.Content, inf.Title);
             }
         }
+    }
 
-        string MutateAllTagsLine(string fileContent, TagCollection tags, string baseUrl)
+    class DocumentInfo
+    {
+        public string Path, Content, Title;
+    }
+
+    static class MarkDownMutatorCore
+    {
+        static readonly RegexOptions Options = RegexOptions.Compiled | RegexOptions.Singleline;
+
+        static List<Tuple<FileInfo, string, string>> GetTop4NewestFiles(ReadWritePaths rootFilePath, List<FileInfo> files)
+        {
+            var startIndex = rootFilePath.ReadPath.Length;
+
+            return files
+                .Where(x => x.FullName.StartsWith(Path.Combine(rootFilePath.ReadPath, "Articles")))
+                .OrderByDescending(x => x.LastWriteTime)
+                .Select(x => new { File = x, Content = File.ReadAllText(x.FullName) })
+                .Where(x =>  !DocumentParserCore.IsDraftFile(x.Content))
+                .Take(4)
+                .Select(x => 
+                Tuple.Create(
+                    x.File,
+                    x.File.FullName.Substring(startIndex, x.File.FullName.Length - startIndex - 2) + "html",
+                    x.Content))
+                .ToList();
+        }
+
+        static readonly Regex TopXLatestArticledEx = new Regex("<Top4LatestArticles/>", Options);
+
+        static string MutateTopXArticles(string fileContent, List<Tuple<FileInfo, string, string>> files, string baseUrl)
+        {
+            var toplist = files
+                .Select(x => new
+                {
+                    Content = x.Item3,
+                    Path = (x.Item2).Replace('\\', '/'),
+                    NewSign = IsLessThan30DaysOld(x.Item1.CreationTime) ? @"<img src=""img/new.gif"">" : ""
+                })
+                .Select(x => $"* [{DocumentParserCore.ParsePageTitle(x.Content)}]({x.Path}) {x.NewSign}");
+
+            var content = TopXLatestArticledEx.Replace(fileContent, x => string.Join("\n", toplist));
+            return content;
+        }
+
+        static bool IsLessThan30DaysOld(DateTime t)
+        {
+            return t > DateTime.Now.AddDays(-30);
+        }
+
+        static readonly Regex ArticleHeaderUrlsEx = new Regex("<ArticleHeaderUrls/>", Options);
+
+        static string MutateArticleHeaderUrlsTag(string fileContent)
+        {
+            var content = ArticleHeaderUrlsEx.Replace(fileContent, x => @"<br>[[Introduction]](<BaseUrl/>) [[All categories]](<BaseUrl/>AllTags.html) [[All articles]](<BaseUrl/>AllArticles.html) [[Edit article <img src=""http://firstclassthoughts.co.uk/img/edit.png""> ]](<GithubPageUrl/>)<br>");
+            return content;
+        }
+
+        static readonly Regex BaseUrlTagEx = new Regex("<BaseUrl/>", Options);
+        static readonly Regex GithubPageUrlEx = new Regex("<GithubPageUrl/>", Options);
+
+        static string MutateBaseUrlTag(string fileContent, string baseUrl)
+        {
+            var content = BaseUrlTagEx.Replace(fileContent, x => baseUrl);
+            return content;
+        }
+
+        static string MutateGithubPageUrlTag(string fileContent, string editUrl)
+        {
+            var content = GithubPageUrlEx.Replace(fileContent, x => editUrl);
+            return content;
+        }
+
+        static readonly Regex AllTagsEx = new Regex(@"<AllTags\s* />", Options);
+
+
+        static string MutateAllTagsLine(string fileContent, TagCollection tags, string baseUrl, ContentGenerator contentGenerator)
         {
             var content = AllTagsEx.Replace(
                 fileContent,
                 z => string.Join(" ", tags
                     .Select(x => x.Key)
-                    .OrderBy(x=>x.Value)
+                    .OrderBy(x => x.Value)
                     .Select(x => contentGenerator.CreateCategoryLink(x, baseUrl))));
             return content;
         }
 
-        string MutateCommentText(string fileContent, string editUrl)
+        static string MutateCategoryTags(string fileContent, string baseUrl, ContentGenerator contentGenerator)
         {
-            var textBody = string.Format(@"**Congratulations! You've come all the way to the bottom of the article! Please help me make this site better for everyone by commenting below. Or how about making editorial changes? Feel free to fix spelling mistakes, weird sentences, or correct what is plain wrong. All the material is on GitHub so don't be shy.** <a href=""{0}"">Just go to Github, press the edit button and fire away.</a>
-<br>", editUrl);
+            var content = DocumentParserCore.CategoryEx.Replace(
+                fileContent,
+                x =>
+                {
+                    Tag[] parsedTags = DocumentParserCore.GetTheTags(x.Groups["tags"].Value);
+                    var sb = new StringBuilder();
+                    foreach (var tag in parsedTags)
+                    {
+                        sb.Append(contentGenerator.CreateCategoryLink(tag, baseUrl));
+                        sb.Append(Environment.NewLine);
+                    }
+
+                    return sb.ToString();
+                });
+
+            return content;
+        }
+
+
+        static readonly Regex CommentTextEx = new Regex("<CommentText>[^<]+</CommentText>", Options);
+
+        static string MutateCommentText(string fileContent, string editUrl)
+        {
+            var textBody =
+	            $@"**Congratulations! You've come all the way to the bottom of the article! Please help me make this site better for everyone by commenting below. Or how about making editorial changes? Feel free to fix spelling mistakes, weird sentences, or correct what is plain wrong. All the material is on GitHub so don't be shy.** <a href=""{editUrl}"">Just go to Github, press the edit button and fire away.</a>
+<br>";
 
             var disqusStuff = @"<div id=""disqus_thread""></div>
 <script type=""text/javascript"">
@@ -113,75 +166,17 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             var content = CommentTextEx.Replace(
                 fileContent,
                 x =>
-                textBody + "<br><br>" + contentGenerator.Newsletter + disqusStuff
+                textBody + "<br><br>" + ContentGenerator.Newsletter + disqusStuff
                 );
 
             return content;
         }
 
+        static readonly Regex SocialButtonShareEx = new Regex("<SocialShareButtons>[^<]+</SocialShareButtons>", Options);
 
-		string MutateBaseUrlTag(string fileContent, string baseUrl)
-		{
-			var content = BaseUrlTagEx.Replace(fileContent, x => baseUrl);
-			return content;
-		}
-
-		string MutateArticleHeaderUrlsTag(string fileContent)
-		{
-			var content = ArticleHeaderUrlsEx.Replace(fileContent, x => @"<br>[[Introduction]](<BaseUrl/>) [[All categories]](<BaseUrl/>AllTags.html) [[All articles]](<BaseUrl/>AllArticles.html) [[Edit article <img src=""http://firstclassthoughts.co.uk/img/edit.png""> ]](<GithubPageUrl/>)<br>");
-			return content;
-		}
-
-		bool IsLessThan30DaysOld(DateTime t)
+        static string MutateSocialLinks(string fileContent, string baseUrl, string relativePath)
         {
-            return t > DateTime.Now.AddDays(-30);
-        }
-
-        string MutateTopXArticles(string fileContent, List<Tuple<FileInfo, string, string>> files, string baseUrl)
-        {
-            var toplist = files
-                .Select(x => new
-                {
-                    Content = x.Item3,
-                    Path = (x.Item2).Replace('\\','/'),
-                    NewSign = IsLessThan30DaysOld(x.Item1.CreationTime) ? @"<img src=""img/new.gif"">" : ""
-                })
-                .Select(x =>$"* [{DocumentParserCore.ParsePageTitle(x.Content)}]({x.Path}) {x.NewSign}");
-
-            var content = TopXLatestArticledEx.Replace(fileContent, x => string.Join("\n", toplist));
-            return content;
-        }
-
-        string MutateGithubPageUrlTag(string fileContent, string editUrl)
-        {
-            var content = GithubPageUrlEx.Replace(fileContent, x => editUrl);
-            return content;
-        }
-
-        string MutateCategoryTags(string fileContent, string baseUrl)
-        {
-            var content = DocumentParserCore.CategoryEx.Replace(
-                fileContent,
-                x =>
-                    {
-                        Tag[] parsedTags = DocumentParserCore.GetTheTags(x.Groups["tags"].Value);
-                        var sb = new StringBuilder();
-                        foreach (var tag in parsedTags)
-                        {
-                            sb.Append(contentGenerator.CreateCategoryLink(tag, baseUrl));
-                            sb.Append(Environment.NewLine);
-                        }
-
-                        return sb.ToString();
-                    });
-
-            return content;
-        }
-
-
-        string MutateSocialLinks(string fileContent, string baseUrl, string relativePath)
-        {
-            var url = string.Format("{0}{1}.html", baseUrl, relativePath.Substring(0, relativePath.Length-3));
+            var url = string.Format("{0}{1}.html", baseUrl, relativePath.Substring(0, relativePath.Length - 3));
 
             string title = new string(fileContent.TakeWhile(x => x != '\n').ToArray()).Substring(1).Trim();
             title = title.Replace(" ", "%20");
@@ -197,16 +192,53 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 [![LinkedIn this]({0}linkedin.png)](http://www.linkedin.com/shareArticle?mini=true&url={1})
 [![Feedly this]({0}feedly.png)](http://cloud.feedly.com/#subscription%2Ffeed%2F{1})
 [![Ycombinator this]({0}ycombinator.png)](http://news.ycombinator.com/submitlink?u={1}&t={2})
-", baseUrl+"img/", url, title));
+", baseUrl + "img/", url, title));
 
             return content;
         }
 
-        public static readonly Regex ArticleCountEx = new Regex(@"<ArticleCount/>", Options);
+        static readonly Regex ArticleCountEx = new Regex(@"<ArticleCount/>", Options);
 
-        string MutateTagArticleCount(string fileContent, int numberOfPages)
+        static string MutateTagArticleCount(string fileContent, int numberOfPages)
         {
             return ArticleCountEx.Replace(fileContent, numberOfPages.ToString());
+        }
+
+        internal static IEnumerable<DocumentInfo> MutateFile(ReadWritePaths rootFilePath, TagCollection tags, string baseUrl, string editBaseUrl, List<FileInfo> files, ContentGenerator contentGenerator)
+        {
+            var top4files = GetTop4NewestFiles(rootFilePath, files);
+            int articleCount = tags.SelectMany(x => x.Value).Distinct().Count();
+
+            foreach (var path in files)
+            {
+                var fileContent = File.ReadAllText(path.FullName, new UTF8Encoding(true));
+
+                if (DocumentParserCore.IsDraftFile(fileContent))
+                    continue;
+
+                var relativePath = path.FullName.Substring(rootFilePath.ReadPath.Length).Replace('\\', '/');
+                var editUrl = editBaseUrl + relativePath;
+
+                fileContent = MutateTopXArticles(fileContent, top4files, baseUrl);
+                fileContent = MutateArticleHeaderUrlsTag(fileContent);
+                fileContent = MutateSocialLinks(fileContent, baseUrl, relativePath);
+                fileContent = MutateCommentText(fileContent, editUrl);
+                fileContent = MutateCategoryTags(fileContent, baseUrl, contentGenerator);
+                fileContent = MutateAllTagsLine(fileContent, tags, baseUrl, contentGenerator);
+                fileContent = MutateBaseUrlTag(fileContent, baseUrl);
+                fileContent = MutateGithubPageUrlTag(fileContent, editUrl);
+                fileContent = MutateTagArticleCount(fileContent, articleCount);
+
+                var title = DocumentParserCore.ParsePageTitle(fileContent);
+
+                yield return
+                    new DocumentInfo()
+                    {
+                        Content = fileContent,
+                        Path = Path.Combine(rootFilePath.WritePath, relativePath),
+                        Title = title
+                    };
+            }
         }
     }
 }

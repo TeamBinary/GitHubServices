@@ -8,7 +8,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
 {
     public class ContentGenerator
     {
-        public string Newsletter => @"<form style=""border:1px solid #ccc;padding:3px;text-align:center;"" action=""https://tinyletter.com/QualityAndReadability"" method=""post"" target=""popupwindow"" onsubmit=""window.open('https://tinyletter.com/QualityAndReadability', 'popupwindow', 'scrollbars=yes,width=800,height=600');return true""><p><label for=""tlemail""><font color=""red"">Subscribe now to the <i>free newsletter service</i></font>.<br>Low frequency mailing list. Get notified when new articles arrive!</label></p><p><input type=""text"" onClick=""this.select();"" style=""width:140px"" name=""email"" id=""tlemail"" value=""Email address""></p><input type=""hidden"" value=""1"" name=""embed""/><input type=""submit"" value=""Subscribe"" /></form>
+        public static string Newsletter => @"<form style=""border:1px solid #ccc;padding:3px;text-align:center;"" action=""https://tinyletter.com/QualityAndReadability"" method=""post"" target=""popupwindow"" onsubmit=""window.open('https://tinyletter.com/QualityAndReadability', 'popupwindow', 'scrollbars=yes,width=800,height=600');return true""><p><label for=""tlemail""><font color=""red"">Subscribe now to the <i>free newsletter service</i></font>.<br>Low frequency mailing list. Get notified when new articles arrive!</label></p><p><input type=""text"" onClick=""this.select();"" style=""width:140px"" name=""email"" id=""tlemail"" value=""Email address""></p><input type=""hidden"" value=""1"" name=""embed""/><input type=""submit"" value=""Subscribe"" /></form>
          ";
 
         public string GenerateAllArticlesPage(List<Page> pages, string baseUrl)
