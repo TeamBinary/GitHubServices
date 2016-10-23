@@ -37,7 +37,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             var di = new DirectoryInfo(rootPath.ReadPath);
             foreach (var path in di.EnumerateFiles("*.*", SearchOption.AllDirectories))
             {
-                if (IsToCopy(path))
+                if (IsToCopy(path) && !path.FullName.StartsWith(rootPath.WritePath))
                 {
                     var relativePath = path.FullName.Substring(rootPath.ReadPath.Length);
                     filesystemRepository.Copy(path.FullName, Path.Combine(rootPath.WritePath, relativePath));
@@ -50,7 +50,7 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
         {
             string ext = path.Extension.ToLower();
             var isImage = ext == ".png" || ext == ".jpeg" || ext == ".gif" || ext == ".jpg" || ext == ".ico";
-	        var isVideo = ext == ".mp4";
+            var isVideo = ext == ".mp4";
             var html = ext == ".css" || ext == ".js";
             var isRelevant = html || path.FullName.EndsWith("CNAME");
 
