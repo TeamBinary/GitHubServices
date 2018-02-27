@@ -7,8 +7,6 @@ using GitHubServices.Models;
 using Moq;
 using NUnit.Framework;
 using PowerAssert;
-using StatePrinter;
-using StatePrinter.Configurations;
 
 namespace GitHubServices.Test.Controllers
 {

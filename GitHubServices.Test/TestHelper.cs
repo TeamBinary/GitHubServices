@@ -1,9 +1,8 @@
 ﻿using System.Globalization;
-
-using StatePrinter;
-using StatePrinter.Configurations;
-using StatePrinter.TestAssistance;
-using StatePrinter.ValueConverters;
+using StatePrinting;
+using StatePrinting.Configurations;
+using StatePrinting.TestAssistance;
+using StatePrinting.ValueConverters;
 
 namespace GitHubServices.Test
 {
