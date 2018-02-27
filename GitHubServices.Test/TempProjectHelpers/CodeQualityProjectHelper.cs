@@ -18,7 +18,7 @@ namespace GitHubServices.Test.BusinessLogic
     public class CodeQualityProjectHelper
     {
         const string readPath = @"C:\src\CodeQualityAndReadability\";
-        const string writePath = readPath+"docs";
+	    const string writePath = readPath + "docs";
 
         readonly string baseUrl = @"http://firstclassthoughts.co.uk/";
 

@@ -137,6 +137,5 @@ namespace GitHubServices.BusinessLogic.TagPageCreator
             sb.AppendLine();
             sb.AppendLine();
         }
-
     }
 }
